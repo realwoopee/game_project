@@ -9,7 +9,7 @@ Priority **ONE**
 - [ ] Gun system
 - [ ] Enemy detection system
 - [ ] Inventory system
-- [ ] Strom system
+- [ ] Storm system
       
 Priority **TWO**
 - [ ] Procedural map generation (CAN MOVE TO BETA)
