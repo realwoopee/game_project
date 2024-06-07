@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Riddick.sln"
+    "dotnet.defaultSolution": "game_project.sln"
 }
