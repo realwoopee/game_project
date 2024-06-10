@@ -97,6 +97,16 @@ namespace StarterAssets
 
         private bool _hasAnimator;
 
+        //CherryOnACake
+        private bool _holdingFirearm = true;
+
+        private bool _ads
+        {
+            get{
+                return Input.GetMouseButton(1);//or GetMouseButtonDown?
+            }
+        }
+
         private bool IsCurrentDeviceMouse
         {
             get
@@ -145,6 +155,8 @@ namespace StarterAssets
             JumpAndGravity();
             GroundedCheck();
             Move();
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None; 
         }
 
         private void LateUpdate()
@@ -243,8 +255,22 @@ namespace StarterAssets
             // if there is a move input rotate player when the player is moving
             if (_input.move != Vector2.zero)
             {
-                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                  _mainCamera.transform.eulerAngles.y;
+                //CherryOnACake
+                if (_ads)
+                {
+                    float xCursor = Input.mousePosition.x;
+                    float yCursor = Input.mousePosition.y;
+                    float xSreenMiddle = Screen.width / 2;
+                    float yScreenMiddle = Screen.height / 2;
+                    _targetRotation = Mathf.Atan2(xCursor - xSreenMiddle, yCursor - yScreenMiddle) * Mathf.Rad2Deg +
+                                      _mainCamera.transform.eulerAngles.y;
+                }
+                else
+                {
+                    _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                      _mainCamera.transform.eulerAngles.y;
+                }
+
                 float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
                     RotationSmoothTime);
 
@@ -253,7 +279,8 @@ namespace StarterAssets
             }
 
 
-            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+            Vector3 targetDirection = Quaternion.Euler(0f, Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                  _mainCamera.transform.eulerAngles.y, 0f) * Vector3.forward;
 
             // move the player
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +

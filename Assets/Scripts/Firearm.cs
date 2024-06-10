@@ -1,10 +1,15 @@
+using StarterAssets;
 using UnityEngine;
+
 public class Firearm : MonoBehaviour, IShooting
 {
     //The angle that makes a cone shape from barrel into the space that shows possible bullet spread(in radians)
     public float AccuracyAngle { get; set;}
 
-    public PlayerPosition{get{PlayerArmature.transform.posX}}
+// public Vector3 PlayerPosition
+// {
+
+// }
 
     public Vector3 CursorPosition
     {
