@@ -103,7 +103,7 @@ namespace StarterAssets
         private bool _ads
         {
             get{
-                return Input.GetMouseButton(1);//or GetMouseButtonDown?
+                return Input.GetMouseButton(1);
             }
         }
 
@@ -212,12 +212,16 @@ namespace StarterAssets
         private void Move()
         {
             // set target speed based on move speed, sprint speed and if sprint is pressed
-            float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
+            float targetSpeed;
+            if (_input.sprint && !_ads)
+                targetSpeed = SprintSpeed;
+            else
+            targetSpeed = MoveSpeed;
 
             // a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
-            // note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
-            // if there is no input, set the target speed to 0
+                // note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
+                // if there is no input, set the target speed to 0
             if (_input.move == Vector2.zero) targetSpeed = 0.0f;
 
             // a reference to the players current horizontal velocity
