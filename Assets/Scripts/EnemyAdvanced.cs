@@ -53,7 +53,7 @@ namespace StarterAssets
         private float _verticalVelocity;
         private float _terminalVelocity = 53.0f;
 
-    private float _fallTimeoutDelta;
+        private float _fallTimeoutDelta;
         private bool _sprinting = false;
 
 
@@ -95,6 +95,9 @@ namespace StarterAssets
             _fallTimeoutDelta = FallTimeout;
 
             _targetPosition = GameObject.FindGameObjectWithTag("Player").transform;
+            _speed = _data.Speed;
+            _health = _data.Health;
+            _damage = _data.Damage;
         }
 
         private void Update()
@@ -104,6 +107,7 @@ namespace StarterAssets
             JumpAndGravity();
             GroundedCheck();
             Move(Vector3.MoveTowards(transform.position, _targetPosition.position, 100f));
+            AliveCheck();
         }
 
 
@@ -134,16 +138,8 @@ namespace StarterAssets
 
         private void Move(Vector3 direction)
         {
-            // set target speed based on move speed, sprint speed and if sprint is pressed
-            float targetSpeed;
-            if (_sprinting && !_ads)
-                targetSpeed = SprintSpeed;
-            else
-                targetSpeed = MoveSpeed;
 
-            _speed = targetSpeed;
-
-            _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
+            _animationBlend = Mathf.Lerp(_animationBlend, _speed, Time.deltaTime * SpeedChangeRate);
             if (_animationBlend < 0.01f) _animationBlend = 0f;
 
             // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
@@ -260,6 +256,17 @@ namespace StarterAssets
             {
                 AudioSource.PlayClipAtPoint(LandingAudioClip, transform.TransformPoint(_controller.center), FootstepAudioVolume);
             }
+        }
+
+        private void _getDamage(int damage)
+        {
+            _health -= damage;
+        }
+
+        private void AliveCheck()
+        {
+            if (_health <= 0)
+            Destroy(gameObject);
         }
     }
 }
