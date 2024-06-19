@@ -26,14 +26,21 @@ public class CursorController : MonoBehaviour
     }
 
     [CanBeNull] private GameObject _lastHitObject;
+    private Vector3 _lastMousePosition;
     
     // Update is called once per frame
     void Update()
     {
-        if (Input.mousePresent)
-            Cursor.visible = false;
+        // if (Input.mousePresent)
+        //     Cursor.visible = false;
+
+        _lastMousePosition = Input.mousePosition;
+    }
+    
+    void FixedUpdate()
+    {
         
-        var hit = GetCursorHit();
+        var hit = GetCursorHit(_lastMousePosition);
         if(hit is null) return;
 
         _lastHitObject = ProcessHoverable(hit.Value, _lastHitObject);
@@ -63,9 +70,9 @@ public class CursorController : MonoBehaviour
 
     }
 
-    private RaycastHit? GetCursorHit()
+    private RaycastHit? GetCursorHit(Vector3 mousePosition)
     {
-        var ray = camera.ScreenPointToRay(Input.mousePosition);
+        var ray = camera.ScreenPointToRay(mousePosition);
         if (Physics.Raycast(ray, out var hit, Mathf.Infinity, groundMask))
         {
             return hit;
