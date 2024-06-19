@@ -253,7 +253,7 @@ namespace StarterAssets
             // normalise input direction
             Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
 
-            
+            Vector3 targetDirection = _controller.velocity.normalized;
 
             // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is a move input rotate player when the player is moving
@@ -280,11 +280,10 @@ namespace StarterAssets
 
                 // rotate to face input direction relative to camera position
                 transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                
+                targetDirection = Quaternion.Euler(0f, Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                                       _mainCamera.transform.eulerAngles.y, 0f) * Vector3.forward;
             }
-
-
-            Vector3 targetDirection = Quaternion.Euler(0f, Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                  _mainCamera.transform.eulerAngles.y, 0f) * Vector3.forward;
 
             // move the player
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
@@ -385,7 +384,7 @@ namespace StarterAssets
 
         private void FixedUpdate()
         {
-            if (Input.GetMouseButtonDown(0) && SelectedWeapon.GetType() == typeof(Firearm))
+            if (Input.GetMouseButtonDown(0) && SelectedWeapon?.GetType() == typeof(Firearm))
             {
                 Shoot();
             }
