@@ -35,10 +35,6 @@ public class CursorController : MonoBehaviour
         //     Cursor.visible = false;
 
         _lastMousePosition = Input.mousePosition;
-    }
-    
-    void FixedUpdate()
-    {
         
         var hit = GetCursorHit(_lastMousePosition);
         if(hit is null) return;
@@ -46,6 +42,11 @@ public class CursorController : MonoBehaviour
         _lastHitObject = ProcessHoverable(hit.Value, _lastHitObject);
 
         _cursor.transform.position = hit.Value.point;
+    }
+    
+    void FixedUpdate()
+    {
+        
     }
 
     [CanBeNull] GameObject ProcessHoverable(RaycastHit currentHit, [CanBeNull] GameObject lastHitObject)
