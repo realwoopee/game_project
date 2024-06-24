@@ -1,4 +1,4 @@
-﻿ using UnityEngine;
+ using UnityEngine;
  using UnityEngine.Serialization;
 
  /* Note: animations are called via the controller for both the character and capsule using animator null checks
@@ -65,6 +65,7 @@ namespace StarterAssets
         private float _cinemachineTargetPitch;
 
         // player
+        private float _fixedUpdateTimer = 0f;
         private float _speed;
         private float _animationBlend;
         private float _targetRotation = 0.0f;
@@ -72,7 +73,7 @@ namespace StarterAssets
         private float _verticalVelocity;
         private float _terminalVelocity = 53.0f;
         private float _fallTimeoutDelta;
-        private Weapon SelectedWeapon;
+        private Gun SelectedGun;
 
         // animation IDs
         private int _animIDSpeed;
@@ -123,6 +124,7 @@ namespace StarterAssets
 
         private void Start()
         {
+            SelectedGun = GameObject.FindObjectOfType<Gun>();
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
             
             _hasAnimator = TryGetComponent(out _animator);
@@ -136,13 +138,18 @@ namespace StarterAssets
 
         private void Update()
         {
+            if (Input.GetMouseButtonDown(0) && SelectedGun.GetType() == typeof(Gun))
+            {
+                Debug.Log("Shoot() called");
+                Shoot();
+            }
             _hasAnimator = TryGetComponent(out _animator);
 
             JumpAndGravity();
             GroundedCheck();
             Move();
             Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None; 
+            Cursor.lockState = CursorLockMode.None;
         }
         
 
@@ -352,20 +359,19 @@ namespace StarterAssets
 
         public void Shoot()
         {
-            Firearm SelectedFirearm = (Firearm)SelectedWeapon;
-            if (!_holdingFirearm || _speed >= SprintSpeed) 
+            if (_speed >= SprintSpeed) 
                 return;
-            if (Ads)
-                SelectedFirearm.Fire();
-            else
-                SelectedFirearm.Hipfire();
+
+            SelectedGun.Fire();
         }
 
+        public void adsWithRayCasted()
+        {
+            if (Ads)
+            {
+                
+            }
+        }
 
-
-    }
-
-    internal class SelectedWeapon
-    {
     }
 }
