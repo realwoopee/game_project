@@ -4,6 +4,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 
 public class CursorController : MonoBehaviour
 {
@@ -16,6 +17,12 @@ public class CursorController : MonoBehaviour
 
     [SerializeField] private LayerMask groundMask;
     
+    [field: SerializeField]
+    [CanBeNull] public GameObject Highlighted { get; private set; }
+
+    [Range(0, 50)]
+    public float maxHighlightRange;
+    
     // Start is called before the first frame update
     void Start()
     {
@@ -25,7 +32,6 @@ public class CursorController : MonoBehaviour
         Cursor.visible = false;
     }
 
-    [CanBeNull] private GameObject _lastHitObject;
     private Vector3 _lastMousePosition;
     
     // Update is called once per frame
@@ -39,19 +45,16 @@ public class CursorController : MonoBehaviour
         var hit = GetCursorHit(_lastMousePosition);
         if(hit is null) return;
 
-        _lastHitObject = ProcessHoverable(hit.Value, _lastHitObject);
+        var hoverable = HoverableHit(hit.Value.point, camera!.transform.position);
+        if(hoverable)
+            Highlighted = ProcessHoverable(hoverable, Highlighted);
 
         _cursor.transform.position = hit.Value.point;
     }
-    
-    void FixedUpdate()
-    {
-        
-    }
 
-    [CanBeNull] GameObject ProcessHoverable(RaycastHit currentHit, [CanBeNull] GameObject lastHitObject)
+    [CanBeNull] GameObject ProcessHoverable(GameObject currentHit, [CanBeNull] GameObject lastHitObject)
     {
-        var currentHitObject = currentHit.collider.gameObject;
+        var currentHitObject = currentHit;
         if (lastHitObject && currentHitObject == lastHitObject) return lastHitObject;
         
         if(lastHitObject)
@@ -66,7 +69,7 @@ public class CursorController : MonoBehaviour
         var newHoverable = currentHitObject.GetComponent<Hoverable>();
         if (!newHoverable) return null;
         newHoverable.OnHoverEnter();
-
+        
         return currentHitObject;
 
     }
@@ -80,5 +83,13 @@ public class CursorController : MonoBehaviour
         }
 
         return null;
+    }
+
+    [CanBeNull]
+    private GameObject HoverableHit(Vector3 targetPosition, Vector3 origin)
+    {
+        var ray = new Ray(origin, targetPosition - origin);
+        Debug.DrawRay(origin, targetPosition - origin);
+        return Physics.Raycast(ray, out var hit, maxHighlightRange, 1 << LayerMask.NameToLayer("Hoverable")) ? hit.transform.gameObject : null;
     }
 }

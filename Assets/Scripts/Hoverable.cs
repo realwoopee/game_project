@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public interface IHoverable
 {
@@ -12,7 +13,7 @@ public interface IHoverable
 
 public class Hoverable : MonoBehaviour, IHoverable
 {
-    public GameObject Outlineable;
+    public GameObject outlineable;
     private Outline _outline;
     
     // Start is called before the first frame update
@@ -29,14 +30,18 @@ public class Hoverable : MonoBehaviour, IHoverable
 
     public void OnEnable()
     {
-        _outline = Outlineable.GetComponent<Outline>();
+        gameObject.layer = LayerMask.NameToLayer("Hoverable");
+        _outline = outlineable.GetComponent<Outline>();
         if (!_outline)
-            _outline = Outlineable.AddComponent<Outline>();
+        {
+            _outline = outlineable.AddComponent<Outline>();
+            _outline.enabled = false;
+        }
     }
 
     public void OnHoverEnter()
     {
-        if (Outlineable && _outline)
+        if (outlineable && _outline)
         {
             _outline.enabled = true;
         }
@@ -44,7 +49,7 @@ public class Hoverable : MonoBehaviour, IHoverable
 
     public void OnHoverExit()
     {
-        if (Outlineable && _outline)
+        if (outlineable && _outline)
         {
             _outline.enabled = false;
         }
