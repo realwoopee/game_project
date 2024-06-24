@@ -30,7 +30,6 @@ public class Hoverable : MonoBehaviour, IHoverable
 
     public void OnEnable()
     {
-        gameObject.layer = LayerMask.NameToLayer("Hoverable");
         _outline = outlineable.GetComponent<Outline>();
         if (!_outline)
         {

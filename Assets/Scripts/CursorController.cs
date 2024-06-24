@@ -44,10 +44,8 @@ public class CursorController : MonoBehaviour
         
         var hit = GetCursorHit(_lastMousePosition);
         if(hit is null) return;
-
-        var hoverable = HoverableHit(hit.Value.point, camera!.transform.position);
-        if(hoverable)
-            Highlighted = ProcessHoverable(hoverable, Highlighted);
+        
+        Highlighted = ProcessHoverable(hit.Value.transform.gameObject, Highlighted);
 
         _cursor.transform.position = hit.Value.point;
     }
@@ -90,6 +88,6 @@ public class CursorController : MonoBehaviour
     {
         var ray = new Ray(origin, targetPosition - origin);
         Debug.DrawRay(origin, targetPosition - origin);
-        return Physics.Raycast(ray, out var hit, maxHighlightRange, 1 << LayerMask.NameToLayer("Hoverable")) ? hit.transform.gameObject : null;
+        return Physics.Raycast(ray, out var hit, Mathf.Infinity, groundMask) ? hit.transform.gameObject : null;
     }
 }
