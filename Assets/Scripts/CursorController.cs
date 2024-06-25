@@ -22,6 +22,7 @@ public class CursorController : MonoBehaviour
 
     [Range(0, 50)]
     public float maxHighlightRange;
+    public Vector3 LastMousePosition { get => _cursor.transform.position; }
     
     // Start is called before the first frame update
     void Start()
@@ -33,7 +34,7 @@ public class CursorController : MonoBehaviour
     }
 
     private Vector3 _lastMousePosition;
-    
+
     // Update is called once per frame
     void Update()
     {
