@@ -3254,6 +3254,7 @@ MonoBehaviour:
   CameraAngleOverride: 0
   LockCameraPosition: 0
   input: {fileID: 2011153620}
+  cursor: {fileID: 590831516}
 --- !u!143 &4416926083347132233
 CharacterController:
   m_ObjectHideFlags: 0
@@ -5348,7 +5349,7 @@ PrefabInstance:
     - target: {fileID: 7999477521687225977, guid: f661176edb75d234684ae535a05bbc91, type: 3}
       propertyPath: camera
       value: 
-      objectReference: {fileID: 2137873458}
+      objectReference: {fileID: 0}
     - target: {fileID: 7999477521687225977, guid: f661176edb75d234684ae535a05bbc91, type: 3}
       propertyPath: groundMask.m_Bits
       value: 4294967295

@@ -1,4 +1,5 @@
 using UnityEngine;
+using StarterAssets;
 
 /* Note: animations are called via the controller for both the character and capsule using animator null checks
  */
@@ -166,6 +167,7 @@ namespace StarterAssets
             // move the enemy
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+            
             // update animator if using character
             if (_hasAnimator)
             {
@@ -258,7 +260,7 @@ namespace StarterAssets
             }
         }
 
-        private void _getDamage(int damage)
+        public void GetDamage(int damage)
         {
             _health -= damage;
         }

@@ -13,6 +13,7 @@ public class PlayerManager : MonoBehaviour
     public VehicleManager vehicleManager;
     public CinemachineVirtualCamera virtualCamera;
     public InputManager inputManager;
+    public Gun gun;
 
     [field: SerializeField]
     public PlayerState PlayerState { get; private set; } = PlayerState.OnFoot;

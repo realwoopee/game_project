@@ -1,4 +1,5 @@
 using System.Collections;
+using StarterAssets;
 using UnityEngine;
 
 //code taken from https://www.youtube.com/watch?v=cI3E7_f74MA
@@ -6,33 +7,36 @@ using UnityEngine;
 public class Gun : MonoBehaviour
 {
     [SerializeField]
-    private int PalletQuantity = 10;
+    private int _palletQuantity = 10;
     [SerializeField]
-    private bool AddBulletSpread = true;
+    private bool _addBulletSpread = true;
     [SerializeField]
-    private Vector3 HipfireDirectionVariance;
+    private int _damage = 10;
     [SerializeField]
-    private Vector3 FireDirectionVariance;
+    private Vector3 _hipfireDirectionVariance = new Vector3(0.1f, 0.05f, 0.1f);
     [SerializeField]
-    private Vector3 PalletSpreadVariance;
+    private Vector3 _fireDirectionVariance = new Vector3(0.01f, 0.01f, 0.01f);
     [SerializeField]
-    private ParticleSystem ShootingSystem;
+    private Vector3 _palletSpreadVariance = new Vector3(0.1f, 0.05f, 0.1f);
+
     [SerializeField]
-    private Transform BulletSpawnPoint;
+    private ParticleSystem _shootingSystem;
     [SerializeField]
-    private ParticleSystem ImpactParticleSystem;
+    private Transform _bulletSpawnPoint;
     [SerializeField]
-    private TrailRenderer BulletTrail;
+    private ParticleSystem _impactParticleSystem;
     [SerializeField]
-    private float ShootDelay = 0.5f;
+    private TrailRenderer _bulletTrail;
     [SerializeField]
-    private LayerMask Mask;
-    private Animator Animator;
-    private float LastShotTime;
+    private float _shootDelay = 0.5f;
+    [SerializeField]
+    private LayerMask _mask;
+    private Animator _animator;
+    private float _lastShotTime;
 
     private void Awake()
     {
-        Animator = GetComponent<Animator>();
+        _animator = GetComponent<Animator>();
     }
 
     public bool Ads
@@ -49,30 +53,32 @@ public class Gun : MonoBehaviour
     public void Fire()
     {
         Ray ray;
-        if (LastShotTime + ShootDelay < Time.time)
+        if (!(_lastShotTime + _shootDelay < Time.time))
         {
-            //TODO: implement object pool
-            //https://www.youtube.com/watch?v=zyzqA_CPz2E
-            //or
-            //https://www.youtube.com/watch?v=fsDE_mO4RZM
+            return;
+        }
+        //TODO: implement object pool
+        //https://www.youtube.com/watch?v=zyzqA_CPz2E
+        //or
+        //https://www.youtube.com/watch?v=fsDE_mO4RZM
 
-            Animator.SetBool("IsShooting", true);
-            ShootingSystem.Play();
-            Vector3 direction = GetDirection();
+        _lastShotTime = Time.time;
+        _animator.SetBool("IsShooting", true);
+        _shootingSystem.Play();
+        Vector3 direction = GetDirection();
 
-            for (int i = 0; i < PalletQuantity; i++)
+        for (int i = 0; i < _palletQuantity; i++)
+        {
+            Vector3 spread = GetPalletSpread(direction);
+            ray = new Ray(GameObject.FindGameObjectWithTag("Player").transform.position, spread);
+            CheckForColliders(ray);
+            Debug.DrawRay(GameObject.FindGameObjectWithTag("Player").transform.position + new Vector3(0f, 1f, 0f), spread * 10, Color.yellow, 0.2f, true);
+
+            if (Physics.Raycast(_bulletSpawnPoint.position, spread, out RaycastHit hit, float.MaxValue, _mask))
             {
-                Vector3 spread = GetPalletSpread(direction);
-                ray = new Ray(GameObject.FindGameObjectWithTag("Player").transform.position, spread);
-                CheckForColliders(ray);
-                Debug.DrawRay(GameObject.FindGameObjectWithTag("Player").transform.position + new Vector3(0f, 1f, 0f), spread * 10, Color.yellow, 0.2f, true);
-
-                if (Physics.Raycast(BulletSpawnPoint.position, spread, out RaycastHit hit, float.MaxValue, Mask))
-                {
-                    TrailRenderer trail = Instantiate(BulletTrail, BulletSpawnPoint.position, Quaternion.identity);
-                    StartCoroutine(SpawnTrail(trail, hit));
-                    LastShotTime = Time.time;
-                }
+                TrailRenderer trail = Instantiate(_bulletTrail, _bulletSpawnPoint.position, Quaternion.identity);
+                StartCoroutine(SpawnTrail(trail, hit));
+                _lastShotTime = Time.time;
             }
         }
     }
@@ -81,30 +87,34 @@ public class Gun : MonoBehaviour
     {
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Debug.Log(hit.collider.gameObject.name + " got hit!");
+            if (hit.collider.TryGetComponent(out EnemyAdvanced enemy))
+            {
+                Debug.Log(hit.collider.gameObject.name + " got hit!");
+                enemy.GetDamage(_damage);
+            }
         }
     }
 
     private Vector3 GetDirection()
     {
-        // Vector3 direction = GameObject.FindGameObjectWithTag("Player").transform.forward;
-        Vector3 direction = BulletSpawnPoint.forward;
-        if (AddBulletSpread)
+        Vector3 direction = GameObject.FindGameObjectWithTag("Player").transform.forward;
+        // Vector3 direction = BulletSpawnPoint.forward;
+        if (_addBulletSpread)
         {
             if (Ads)
             {
                 direction += new Vector3(
-                    Random.Range(-FireDirectionVariance.x, FireDirectionVariance.x),
-                    Random.Range(-FireDirectionVariance.y, FireDirectionVariance.y),
-                    Random.Range(-FireDirectionVariance.z, FireDirectionVariance.z)
+                    Random.Range(-_fireDirectionVariance.x, _fireDirectionVariance.x),
+                    Random.Range(-_fireDirectionVariance.y, _fireDirectionVariance.y),
+                    Random.Range(-_fireDirectionVariance.z, _fireDirectionVariance.z)
                 );
             }
             else
             {
                 direction += new Vector3(
-                    Random.Range(-HipfireDirectionVariance.x, HipfireDirectionVariance.x),
-                    Random.Range(-HipfireDirectionVariance.y, HipfireDirectionVariance.y),
-                    Random.Range(-HipfireDirectionVariance.z, HipfireDirectionVariance.z)
+                    Random.Range(-_hipfireDirectionVariance.x, _hipfireDirectionVariance.x),
+                    Random.Range(-_hipfireDirectionVariance.y, _hipfireDirectionVariance.y),
+                    Random.Range(-_hipfireDirectionVariance.z, _hipfireDirectionVariance.z)
                 );
             }
             direction.Normalize();
@@ -114,20 +124,11 @@ public class Gun : MonoBehaviour
 
     private Vector3 GetPalletSpread(Vector3 direction)
     {
-        Debug.Log(direction.ToString());
-        Debug.Log(PalletSpreadVariance.x);
-        float test1 = Random.Range(-PalletSpreadVariance.x, PalletSpreadVariance.x);
-        float test2 = Random.Range(-PalletSpreadVariance.y, PalletSpreadVariance.y);
-        float test3 = Random.Range(-PalletSpreadVariance.z, PalletSpreadVariance.z);
-        // Debug.Log(test1);
-        // Debug.Log(test2);
-        // Debug.Log(test3);
         direction += new Vector3(
-            Random.Range(-PalletSpreadVariance.x, PalletSpreadVariance.x),
-            Random.Range(-PalletSpreadVariance.y, PalletSpreadVariance.y),
-            Random.Range(-PalletSpreadVariance.z, PalletSpreadVariance.z)
+            Random.Range(-_palletSpreadVariance.x, _palletSpreadVariance.x),
+            Random.Range(-_palletSpreadVariance.y, _palletSpreadVariance.y),
+            Random.Range(-_palletSpreadVariance.z, _palletSpreadVariance.z)
         );
-        Debug.Log(direction.ToString());
         direction.Normalize();
         return direction;
     }
@@ -144,9 +145,9 @@ public class Gun : MonoBehaviour
 
             yield return null;
         }
-        Animator.SetBool("IsShooting", false);
+        _animator.SetBool("IsShooting", false);
         Trail.transform.position = Hit.point;
-        Instantiate(ImpactParticleSystem, Hit.point, Quaternion.LookRotation(Hit.normal));
+        Instantiate(_impactParticleSystem, Hit.point, Quaternion.LookRotation(Hit.normal));
 
         Destroy(Trail.gameObject, Trail.time);
     }

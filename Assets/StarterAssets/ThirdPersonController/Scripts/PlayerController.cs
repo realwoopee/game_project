@@ -76,7 +76,6 @@ namespace StarterAssets
         private float _terminalVelocity = 53.0f;
         private float _fallTimeoutDelta;
         private Gun SelectedGun;
-        private CursorController _cursor;
 
         // animation IDs
         private int _animIDSpeed;
@@ -87,6 +86,7 @@ namespace StarterAssets
         private Animator _animator;
         private CharacterController _controller;
         public InputManager input;
+        public CursorController cursor;
         private GameObject _mainCamera;
 
         private const float _threshold = 0.01f;
@@ -227,34 +227,34 @@ namespace StarterAssets
             Vector3 targetDirection = _controller.velocity.normalized;
 
 
-            // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
-            // if there is a move input rotate player when the player is moving
-            if (input.move != Vector2.zero)
+            if (Ads)
             {
-                //CherryOnACake
-                if (Ads)
-                {
-                    float xCursor = Input.mousePosition.x;
-                    float yCursor = Input.mousePosition.y;
-                    float xSreenMiddle = Screen.width / 2;
-                    float yScreenMiddle = Screen.height / 2;
-                    GetDirTowardsCursor();
-                }
-                else
+                var dirToCursor = -transform.position + cursor.transform.position;
+                _targetRotation = Mathf.Atan2(dirToCursor.x, dirToCursor.z) * Mathf.Rad2Deg;
+                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
+                    RotationSmoothTime);
+
+                // rotate to face input direction relative to camera position
+                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+            }
+            else
+            {
+                if (input.move != Vector2.zero)
                 {
                     _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                      _mainCamera.transform.eulerAngles.y;
+                                    _mainCamera.transform.eulerAngles.y;
                     float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
                         RotationSmoothTime);
 
                     // rotate to face input direction relative to camera position
                     transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
                 }
-
-                
-                targetDirection = Quaternion.Euler(0f, Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                                       _mainCamera.transform.eulerAngles.y, 0f) * Vector3.forward;
             }
+
+            
+            targetDirection = Quaternion.Euler(0f, Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                                    _mainCamera.transform.eulerAngles.y, 0f) * Vector3.forward;
+
 
             // move the player
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
@@ -381,10 +381,10 @@ namespace StarterAssets
 
         private void FixedUpdate()
         {
-            if (Input.GetMouseButtonDown(0) && SelectedWeapon?.GetType() == typeof(Firearm))
-            {
-                Shoot();
-            }
+            // if (Input.GetMouseButtonDown(0) && SelectedWeapon?.GetType() == typeof(Firearm))
+            // {
+            //     Shoot();
+            // }
         }
 
         public void Shoot()
