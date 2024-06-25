@@ -1,4 +1,6 @@
- using UnityEngine;
+using System.Security.Cryptography;
+using Unity.VisualScripting;
+using UnityEngine;
  using UnityEngine.Serialization;
 
  /* Note: animations are called via the controller for both the character and capsule using animator null checks
@@ -74,6 +76,7 @@ namespace StarterAssets
         private float _terminalVelocity = 53.0f;
         private float _fallTimeoutDelta;
         private Gun SelectedGun;
+        private CursorController _cursor;
 
         // animation IDs
         private int _animIDSpeed;
@@ -95,7 +98,8 @@ namespace StarterAssets
 
         private bool Ads
         {
-            get{
+            get
+            {
                 return Input.GetMouseButton(1);
             }
         }
@@ -126,7 +130,7 @@ namespace StarterAssets
         {
             SelectedGun = GameObject.FindObjectOfType<Gun>();
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-            
+
             _hasAnimator = TryGetComponent(out _animator);
             _controller = GetComponent<CharacterController>();
 
@@ -151,7 +155,7 @@ namespace StarterAssets
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
         }
-        
+
 
         private void AssignAnimationIDs()
         {
@@ -187,8 +191,8 @@ namespace StarterAssets
 
             // a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
 
-                // note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
-                // if there is no input, set the target speed to 0
+            // note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
+            // if there is no input, set the target speed to 0
             if (input.move == Vector2.zero) targetSpeed = 0.0f;
 
             // a reference to the players current horizontal velocity
@@ -222,6 +226,7 @@ namespace StarterAssets
 
             Vector3 targetDirection = _controller.velocity.normalized;
 
+
             // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is a move input rotate player when the player is moving
             if (input.move != Vector2.zero)
@@ -233,20 +238,19 @@ namespace StarterAssets
                     float yCursor = Input.mousePosition.y;
                     float xSreenMiddle = Screen.width / 2;
                     float yScreenMiddle = Screen.height / 2;
-                    _targetRotation = Mathf.Atan2(xCursor - xSreenMiddle, yCursor - yScreenMiddle) * Mathf.Rad2Deg +
-                                      _mainCamera.transform.eulerAngles.y;
+                    GetDirTowardsCursor();
                 }
                 else
                 {
                     _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
                                       _mainCamera.transform.eulerAngles.y;
+                    float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
+                        RotationSmoothTime);
+
+                    // rotate to face input direction relative to camera position
+                    transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
                 }
 
-                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
-                    RotationSmoothTime);
-
-                // rotate to face input direction relative to camera position
-                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
                 
                 targetDirection = Quaternion.Euler(0f, Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
                                                        _mainCamera.transform.eulerAngles.y, 0f) * Vector3.forward;
@@ -261,6 +265,32 @@ namespace StarterAssets
             {
                 _animator.SetFloat(_animIDSpeed, _animationBlend);
                 _animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
+            }
+        }
+
+        public void CheckForColliders(Ray ray)
+        {
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                Debug.Log(hit.collider.gameObject.name + " got hit!");
+            }
+        }
+
+        private void GetDirTowardsCursor()
+        {
+            int Mask = 1;
+            float xCursor = Input.mousePosition.x;
+            float yCursor = Input.mousePosition.y;
+            Vector3 cameraPosition = Camera.main.transform.position;
+            Vector3 mousePos3D = Camera.main.ScreenToWorldPoint(new Vector3(xCursor, yCursor, cameraPosition.z));
+            Debug.Log(mousePos3D.ToString());
+            Vector3 cameraDir = -(mousePos3D - cameraPosition);
+            Debug.DrawRay(cameraPosition, cameraDir, Color.red);
+
+            if (Physics.Raycast(cameraPosition, cameraDir, out RaycastHit currentHit, float.MaxValue, Mask))
+            {
+                Vector3 hitObjectPosition = currentHit.collider.transform.position;
+                transform.LookAt(hitObjectPosition);
             }
         }
 
@@ -359,7 +389,7 @@ namespace StarterAssets
 
         public void Shoot()
         {
-            if (_speed >= SprintSpeed) 
+            if (_speed >= SprintSpeed)
                 return;
 
             SelectedGun.Fire();
@@ -369,7 +399,7 @@ namespace StarterAssets
         {
             if (Ads)
             {
-                
+
             }
         }
 
