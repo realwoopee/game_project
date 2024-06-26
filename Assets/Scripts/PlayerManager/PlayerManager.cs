@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Cinemachine;
 using StarterAssets;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerManager : MonoBehaviour
@@ -13,11 +10,13 @@ public class PlayerManager : MonoBehaviour
     public VehicleManager vehicleManager;
     public CinemachineVirtualCamera virtualCamera;
     public InputManager inputManager;
-    public Gun gun;
+    public InventoryManager inventoryManager;
+    // [SerializeField] public Gun gun;
 
     [field: SerializeField]
     public PlayerState PlayerState { get; private set; } = PlayerState.OnFoot;
-    
+    public bool isInventoryOpened { get => inventoryManager.IsInnerOpened; set => inventoryManager.IsInnerOpened = value; }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -58,13 +57,26 @@ public class PlayerManager : MonoBehaviour
         virtualCamera.Follow = playerController.transform.Find("PlayerCameraRoot").transform;
         vehicle.GetComponent<VehicleManager>().PlayerGotOut();
         PlayerState = PlayerState.OnFoot;
-        
+
     }
 
+    public void ManageShooting()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            if (playerController.Speed >= playerController.SprintSpeed || inventoryManager.IsInnerOpened)//or inventoryOpened
+                return;
+
+            playerController.SelectedGun.Fire();
+        }
+        if (Input.GetKeyDown(KeyCode.R) && !playerController.SelectedGun.IsReloading && !(playerController.SelectedGun.ShellsLeft == playerController.SelectedGun.MagSize))
+            playerController.SelectedGun.Reload();
+
+    }
     // Update is called once per frame
     void Update()
     {
-        
+        ManageShooting();
     }
 }
 

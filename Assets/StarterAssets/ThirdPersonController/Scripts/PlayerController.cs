@@ -67,6 +67,7 @@ namespace StarterAssets
         private float _cinemachineTargetPitch;
 
         // player
+        private bool _inventoryOpened;
         private float _fixedUpdateTimer = 0f;
         private float _speed;
         private float _animationBlend;
@@ -75,7 +76,6 @@ namespace StarterAssets
         private float _verticalVelocity;
         private float _terminalVelocity = 53.0f;
         private float _fallTimeoutDelta;
-        private Gun SelectedGun;
 
         // animation IDs
         private int _animIDSpeed;
@@ -85,8 +85,6 @@ namespace StarterAssets
 
         private Animator _animator;
         private CharacterController _controller;
-        public InputManager input;
-        public CursorController cursor;
         private GameObject _mainCamera;
 
         private const float _threshold = 0.01f;
@@ -96,25 +94,23 @@ namespace StarterAssets
         //CherryOnACake
         private bool _holdingFirearm = true;
 
-        private bool Ads
-        {
-            get
-            {
-                return Input.GetMouseButton(1);
-            }
-        }
+        public bool Ads { get => SelectedGun.Ads; }
+        public float Speed { get => _speed; }
+        public InputManager input;
+        public CursorController cursor;
+        public Gun SelectedGun;
 
-//         private bool IsCurrentDeviceMouse
-//         {
-//             get
-//             {
-// #if ENABLE_INPUT_SYSTEM
-//                 return _playerInput.currentControlScheme == "KeyboardMouse";
-// #else
-// 				return false;
-// #endif
-//             }
-//         }
+        //         private bool IsCurrentDeviceMouse
+        //         {
+        //             get
+        //             {
+        // #if ENABLE_INPUT_SYSTEM
+        //                 return _playerInput.currentControlScheme == "KeyboardMouse";
+        // #else
+        // 				return false;
+        // #endif
+        //             }
+        //         }
 
 
         private void Awake()
@@ -142,12 +138,6 @@ namespace StarterAssets
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0)) 
-                Shoot();
-            if (Input.GetKeyDown(KeyCode.R) && !SelectedGun.IsReloading)
-                SelectedGun.Reload();
-
-
             _hasAnimator = TryGetComponent(out _animator);
 
             JumpAndGravity();
@@ -385,14 +375,6 @@ namespace StarterAssets
             // {
             //     Shoot();
             // }
-        }
-
-        public void Shoot()
-        {
-            if (_speed >= SprintSpeed)
-                return;
-
-            SelectedGun.Fire();
         }
 
         public void adsWithRayCasted()

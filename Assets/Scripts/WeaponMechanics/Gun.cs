@@ -63,6 +63,8 @@ public class Gun : MonoBehaviour
         _isReloading = false;
     }
 
+    public int ShellsLeft { get => _shellsLeft; }
+    public int MagSize{get=>_magSize;}
     public bool IsReloading { get => _isReloading; }
     //TODO: ADS sounds
     public bool Ads
@@ -139,16 +141,13 @@ public class Gun : MonoBehaviour
     }
     public void CheckForColliders(Ray ray)
     {
-        Debug.Log("Entered1");
         // if (Physics.Raycast(ray, out RaycastHit hit))
         Vector3 direction = GetDirection();
         Vector3 spread = GetPalletSpread(direction);
         if (Physics.Raycast(_bulletSpawnPoint.position, spread, out RaycastHit hit, float.MaxValue, _damagableLayer))
         {
-            Debug.Log("Entered");
             if (hit.collider.TryGetComponent(out EnemyAdvanced enemy))
             {
-                // Debug.Log("Entered2");
                 enemy.GetDamage(_damage);
             }
         }
