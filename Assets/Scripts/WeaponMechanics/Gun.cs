@@ -83,6 +83,8 @@ public class Gun : MonoBehaviour
         if (!(_lastShotTime + _shootDelay < Time.time) || _isReloading)
             return;
 
+        _lastShotTime = Time.time;
+        
         if (_shellsLeft == 0)
         {
             AudioSource.PlayClipAtPoint(_triggerHammer, transform.position, _triggerHammerVolume);
@@ -95,7 +97,6 @@ public class Gun : MonoBehaviour
 
 
         _shellsLeft -= 1;
-        _lastShotTime = Time.time;
         _animator.SetBool("IsShooting", true);
         _shootingSystem.Play();
         Vector3 direction = GetDirection();

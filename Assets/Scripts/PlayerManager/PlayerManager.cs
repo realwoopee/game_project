@@ -15,12 +15,16 @@ public class PlayerManager : MonoBehaviour
 
     [field: SerializeField]
     public PlayerState PlayerState { get; private set; } = PlayerState.OnFoot;
-    public bool isInventoryOpened { get => inventoryManager.IsInnerOpened; set => inventoryManager.IsInnerOpened = value; }
+    
+    [field: SerializeField]
+    public bool IsInventoryOpened { get => inventoryManager.IsInnerOpened; set => inventoryManager.IsInnerOpened = value; }
 
     // Start is called before the first frame update
     void Start()
     {
         inputManager.OnInteractPressed += OnInteract;
+        //inputManager.OnShootPressed += Shoot;
+        inputManager.OnReloadPressed += Reload;
     }
 
     void OnInteract()
@@ -60,23 +64,24 @@ public class PlayerManager : MonoBehaviour
 
     }
 
-    public void ManageShooting()
+    void Shoot()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (playerController.Speed >= playerController.SprintSpeed || inventoryManager.IsInnerOpened)//or inventoryOpened
-                return;
+        if (playerController.Speed >= playerController.SprintSpeed || inventoryManager.IsInnerOpened)//or inventoryOpened
+            return;
 
-            playerController.SelectedGun.Fire();
-        }
-        if (Input.GetKeyDown(KeyCode.R) && !playerController.SelectedGun.IsReloading && !(playerController.SelectedGun.ShellsLeft == playerController.SelectedGun.MagSize))
-            playerController.SelectedGun.Reload();
-
+        playerController.SelectedGun.Fire();
     }
-    // Update is called once per frame
+
+    void Reload()
+    {
+        if (!playerController.SelectedGun.IsReloading && playerController.SelectedGun.ShellsLeft != playerController.SelectedGun.MagSize)
+            playerController.SelectedGun.Reload();
+    }
+    
     void Update()
     {
-        ManageShooting();
+        if(inputManager.shootHeld)
+            Shoot();
     }
 }
 
