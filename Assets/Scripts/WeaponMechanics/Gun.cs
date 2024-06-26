@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Threading.Tasks;
 using StarterAssets;
 using UnityEngine;
 
@@ -30,7 +31,25 @@ public class Gun : MonoBehaviour
     [SerializeField]
     private float _shootDelay = 0.5f;
     [SerializeField]
-    private LayerMask _mask;
+    private int _magSize = 10;
+    [SerializeField]
+    private LayerMask _damagableLayer = 1 << 6;
+    [SerializeField]
+    private AudioClip _reloadSound;
+    [SerializeField]
+    [Range(0, 1)] private float _reloadSoundVolume = 0.5f;
+    [SerializeField]
+    private AudioClip _gunShot1;
+    [SerializeField]
+    private AudioClip _gunShot2;
+    [SerializeField]
+    [Range(0, 1)] private float _gunShotVolume = 0.5f;
+    [SerializeField]
+    private AudioClip _triggerHammer;
+    [SerializeField]
+    [Range(0, 1)] private float _triggerHammerVolume = 0.5f;
+    private int _shellsLeft;
+    private bool _isReloading;
     private Animator _animator;
     private float _lastShotTime;
 
@@ -38,7 +57,14 @@ public class Gun : MonoBehaviour
     {
         _animator = GetComponent<Animator>();
     }
+    void Start()
+    {
+        _shellsLeft = _magSize + 1;
+        _isReloading = false;
+    }
 
+    public bool IsReloading { get => _isReloading; }
+    //TODO: ADS sounds
     public bool Ads
     {
         get
@@ -52,9 +78,12 @@ public class Gun : MonoBehaviour
 
     public void Fire()
     {
-        Ray ray;
-        if (!(_lastShotTime + _shootDelay < Time.time))
+        if (!(_lastShotTime + _shootDelay < Time.time) || _isReloading)
+            return;
+
+        if (_shellsLeft == 0)
         {
+            AudioSource.PlayClipAtPoint(_triggerHammer, transform.position, _triggerHammerVolume);
             return;
         }
         //TODO: implement object pool
@@ -62,10 +91,19 @@ public class Gun : MonoBehaviour
         //or
         //https://www.youtube.com/watch?v=fsDE_mO4RZM
 
+
+        _shellsLeft -= 1;
         _lastShotTime = Time.time;
         _animator.SetBool("IsShooting", true);
         _shootingSystem.Play();
         Vector3 direction = GetDirection();
+        Ray ray;
+
+
+        if (_shellsLeft % 2 == 0)
+            AudioSource.PlayClipAtPoint(_gunShot1, transform.position, _gunShotVolume);
+        else
+            AudioSource.PlayClipAtPoint(_gunShot2, transform.position, _gunShotVolume);
 
         for (int i = 0; i < _palletQuantity; i++)
         {
@@ -74,22 +112,43 @@ public class Gun : MonoBehaviour
             CheckForColliders(ray);
             Debug.DrawRay(GameObject.FindGameObjectWithTag("Player").transform.position + new Vector3(0f, 1f, 0f), spread * 10, Color.yellow, 0.2f, true);
 
-            if (Physics.Raycast(_bulletSpawnPoint.position, spread, out RaycastHit hit, float.MaxValue, _mask))
+            if (Physics.Raycast(_bulletSpawnPoint.position, spread, out RaycastHit hit, float.MaxValue, _damagableLayer))
             {
-                TrailRenderer trail = Instantiate(_bulletTrail, _bulletSpawnPoint.position, Quaternion.identity);
-                StartCoroutine(SpawnTrail(trail, hit));
+                // TrailRenderer trail = Instantiate(_bulletTrail, _bulletSpawnPoint.position, Quaternion.identity);
+                // StartCoroutine(SpawnTrail(trail, hit));
                 _lastShotTime = Time.time;
             }
         }
     }
 
+    public async Task Reload()
+    {
+        // if (NoAmmoLeftInInventory)
+        // {
+        //     return;
+        // }
+        if (_shellsLeft == _magSize)
+            return;
+
+        _isReloading = true;
+        AudioSource.PlayClipAtPoint(_reloadSound, transform.position, _reloadSoundVolume);
+        await Task.Delay((int)(_reloadSound.length * 1000));
+        _isReloading = false;
+
+        _shellsLeft = _magSize;
+    }
     public void CheckForColliders(Ray ray)
     {
-        if (Physics.Raycast(ray, out RaycastHit hit))
+        Debug.Log("Entered1");
+        // if (Physics.Raycast(ray, out RaycastHit hit))
+        Vector3 direction = GetDirection();
+        Vector3 spread = GetPalletSpread(direction);
+        if (Physics.Raycast(_bulletSpawnPoint.position, spread, out RaycastHit hit, float.MaxValue, _damagableLayer))
         {
+            Debug.Log("Entered");
             if (hit.collider.TryGetComponent(out EnemyAdvanced enemy))
             {
-                Debug.Log(hit.collider.gameObject.name + " got hit!");
+                // Debug.Log("Entered2");
                 enemy.GetDamage(_damage);
             }
         }

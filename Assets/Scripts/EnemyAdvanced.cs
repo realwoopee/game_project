@@ -262,6 +262,7 @@ namespace StarterAssets
 
         public void GetDamage(int damage)
         {
+            // Debug.Log("Before: " + _health + "\nDealt: " + damage + "  After: " + (_health - damage));
             _health -= damage;
         }
 

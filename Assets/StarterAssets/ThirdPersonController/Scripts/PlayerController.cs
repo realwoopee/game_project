@@ -142,11 +142,12 @@ namespace StarterAssets
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0) && SelectedGun.GetType() == typeof(Gun))
-            {
-                Debug.Log("Shoot() called");
+            if (Input.GetMouseButtonDown(0)) 
                 Shoot();
-            }
+            if (Input.GetKeyDown(KeyCode.R) && !SelectedGun.IsReloading)
+                SelectedGun.Reload();
+
+
             _hasAnimator = TryGetComponent(out _animator);
 
             JumpAndGravity();
@@ -272,7 +273,7 @@ namespace StarterAssets
         {
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                Debug.Log(hit.collider.gameObject.name + " got hit!");
+                // Debug.Log(hit.collider.gameObject.name + " got hit!");
             }
         }
 
@@ -283,7 +284,6 @@ namespace StarterAssets
             float yCursor = Input.mousePosition.y;
             Vector3 cameraPosition = Camera.main.transform.position;
             Vector3 mousePos3D = Camera.main.ScreenToWorldPoint(new Vector3(xCursor, yCursor, cameraPosition.z));
-            Debug.Log(mousePos3D.ToString());
             Vector3 cameraDir = -(mousePos3D - cameraPosition);
             Debug.DrawRay(cameraPosition, cameraDir, Color.red);
 
