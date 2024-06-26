@@ -64,7 +64,7 @@ public class Gun : MonoBehaviour
     }
 
     public int ShellsLeft { get => _shellsLeft; }
-    public int MagSize{get=>_magSize;}
+    public int MagSize { get => _magSize; }
     public bool IsReloading { get => _isReloading; }
     //TODO: ADS sounds
     public bool Ads
@@ -156,7 +156,7 @@ public class Gun : MonoBehaviour
     private Vector3 GetDirection()
     {
         Vector3 direction = GameObject.FindGameObjectWithTag("Player").transform.forward;
-        // Vector3 direction = BulletSpawnPoint.forward;
+        Debug.Log(direction.ToString());
         if (_addBulletSpread)
         {
             if (Ads)

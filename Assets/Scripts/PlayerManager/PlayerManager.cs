@@ -12,6 +12,8 @@ public class PlayerManager : MonoBehaviour
     public InputManager inputManager;
     public InventoryManager inventoryManager;
     // [SerializeField] public Gun gun;
+    public StormManager stormManager;
+    public HealthBarManager health;
 
     [field: SerializeField]
     public PlayerState PlayerState { get; private set; } = PlayerState.OnFoot;
@@ -71,12 +73,22 @@ public class PlayerManager : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.R) && !playerController.SelectedGun.IsReloading && !(playerController.SelectedGun.ShellsLeft == playerController.SelectedGun.MagSize))
             playerController.SelectedGun.Reload();
-
+    }
+    public void ManageStorm(){
+        Vector3 playerPosition = playerController.transform.position;
+        float someDistance = stormManager.StormProgressAlongAxis(stormManager.MillisecondsPassed);
+        float timeSinceLastHitByStorm = stormManager.StormProgressAlongAxis(stormManager.timeSinceLastDamage);
+        Debug.Log("x: " + playerPosition.x + " to " + (stormManager.MapWidth - someDistance));
+        Debug.Log("y: " + playerPosition.y + " to " + (stormManager.MapHeight - someDistance));
+        Debug.Log(timeSinceLastHitByStorm);
+        if (playerPosition.x < stormManager.MapWidth - someDistance && playerPosition.z < stormManager.MapHeight - someDistance && timeSinceLastHitByStorm > 1000)
+            health.TakeDamage(5);
     }
     // Update is called once per frame
     void Update()
     {
         ManageShooting();
+        ManageStorm();
     }
 }
 

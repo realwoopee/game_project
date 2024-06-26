@@ -93,9 +93,27 @@ namespace StarterAssets
 
         //CherryOnACake
         private bool _holdingFirearm = true;
+        [SerializeField] private int _maxHealth;
+        private int _health;
 
         public bool Ads { get => SelectedGun.Ads; }
         public float Speed { get => _speed; }
+        public int Health
+        {
+            get
+            {
+                return _health;
+            }
+            set
+            {
+                if (value >= _maxHealth)
+                    _health = _maxHealth;
+                else if (value < 0)
+                    _health = 0;
+                else
+                    _health = value;
+            }
+        }
         public InputManager input;
         public CursorController cursor;
         public Gun SelectedGun;
@@ -147,6 +165,10 @@ namespace StarterAssets
             Cursor.lockState = CursorLockMode.None;
         }
 
+        public void AddHealth(int value)
+        {
+            Health += value;
+        }
 
         private void AssignAnimationIDs()
         {
@@ -369,21 +391,6 @@ namespace StarterAssets
             }
         }
 
-        private void FixedUpdate()
-        {
-            // if (Input.GetMouseButtonDown(0) && SelectedWeapon?.GetType() == typeof(Firearm))
-            // {
-            //     Shoot();
-            // }
-        }
-
-        public void adsWithRayCasted()
-        {
-            if (Ads)
-            {
-
-            }
-        }
 
     }
 }
