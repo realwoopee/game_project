@@ -36,7 +36,7 @@ public class CursorController : MonoBehaviour
     private Vector3 _lastMousePosition;
 
     // Update is called once per frame
-    void Update()
+    void LateUpdate()
     {
         // if (Input.mousePresent)
         //     Cursor.visible = false;
@@ -44,7 +44,10 @@ public class CursorController : MonoBehaviour
         _lastMousePosition = Input.mousePosition;
         
         var hit = GetCursorHit(_lastMousePosition);
-        if(hit is null) return;
+        if (hit is null)
+        {
+            Debug.LogError("Cursor didn't hit");
+        }
         
         Highlighted = ProcessHoverable(hit.Value.transform.gameObject, Highlighted);
 
