@@ -67,7 +67,7 @@ public class PlayerManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (playerController.Speed >= playerController.SprintSpeed || inventoryManager.IsInnerOpened)//or inventoryOpened
+            if (playerController.Speed >= playerController.SprintSpeed || inventoryManager.IsInnerOpened || isInCar)
                 return;
 
             playerController.SelectedGun.Fire();
