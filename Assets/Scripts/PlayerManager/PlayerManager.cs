@@ -13,53 +13,56 @@ public class PlayerManager : MonoBehaviour
     public InventoryManager inventoryManager;
     // [SerializeField] public Gun gun;
     public StormManager stormManager;
-    public HealthBarManager health;
+    public StormCubeManager stormCubeManager;
+    public HealthBarManager healthBar;
 
     [field: SerializeField]
-    public PlayerState PlayerState { get; private set; } = PlayerState.OnFoot;
+    [HideInInspector] public bool isInCar { get; private set; } = false;
     public bool isInventoryOpened { get => inventoryManager.IsInnerOpened; set => inventoryManager.IsInnerOpened = value; }
 
     // Start is called before the first frame update
     void Start()
     {
+        stormCubeManager = stormManager.StormCube.GetComponent<StormCubeManager>();
         inputManager.OnInteractPressed += OnInteract;
     }
 
     void OnInteract()
     {
-        switch (PlayerState)
+        if (!isInCar)
         {
-            case PlayerState.OnFoot:
-                if (cursorController.Highlighted && cursorController.Highlighted == vehicleManager.transform.parent.gameObject)
-                {
-                    PutPlayerInVehicle(vehicleManager.gameObject);
-                }
-                break;
-            case PlayerState.InVehicle:
-                PutPlayerOutOfVehicle(vehicleManager.gameObject);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            if (cursorController.Highlighted && cursorController.Highlighted == vehicleManager.transform.parent.gameObject)
+            {
+                PutPlayerInVehicle(vehicleManager.gameObject);
+                stormCubeManager.isPlayerInsideTheStorm = false;
+            }
         }
+        else if (isInCar)
+        {
+            PutPlayerOutOfVehicle(vehicleManager.gameObject);
+        }
+
     }
 
     void PutPlayerInVehicle(GameObject vehicle)
     {
-        playerController.gameObject.SetActive(false);
+        isInCar = true;
+        // playerController.gameObject.SetActive(false);
         virtualCamera.Follow = vehicle.gameObject.transform;
         vehicle.GetComponent<VehicleManager>().PlayerGotIn();
-        PlayerState = PlayerState.InVehicle;
+        playerController.transform.localScale = new Vector3(0,0,0);
+        stormCubeManager.isPlayerInsideTheStorm = false;
     }
 
     void PutPlayerOutOfVehicle(GameObject vehicle)
     {
-        playerController.transform.position =
-            vehicle.transform.parent.Find("PlayerLeavePosition").position;
-        playerController.gameObject.SetActive(true);
+        isInCar = false;
+        // playerController.gameObject.SetActive(true);
+        playerController.transform.localScale = new Vector3(1,1,1);
         virtualCamera.Follow = playerController.transform.Find("PlayerCameraRoot").transform;
         vehicle.GetComponent<VehicleManager>().PlayerGotOut();
-        PlayerState = PlayerState.OnFoot;
-
+        playerController.transform.position =
+            vehicle.transform.parent.Find("PlayerLeavePosition").position;
     }
 
     public void ManageShooting()
@@ -74,26 +77,31 @@ public class PlayerManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R) && !playerController.SelectedGun.IsReloading && !(playerController.SelectedGun.ShellsLeft == playerController.SelectedGun.MagSize))
             playerController.SelectedGun.Reload();
     }
+
     public void ManageStorm(){
-        Vector3 playerPosition = playerController.transform.position;
-        float someDistance = stormManager.StormProgressAlongAxis(stormManager.MillisecondsPassed);
-        float timeSinceLastHitByStorm = stormManager.StormProgressAlongAxis(stormManager.timeSinceLastDamage);
-        Debug.Log("x: " + playerPosition.x + " to " + (stormManager.MapWidth - someDistance));
-        Debug.Log("y: " + playerPosition.y + " to " + (stormManager.MapHeight - someDistance));
-        Debug.Log(timeSinceLastHitByStorm);
-        if (playerPosition.x < stormManager.MapWidth - someDistance && playerPosition.z < stormManager.MapHeight - someDistance && timeSinceLastHitByStorm > 1000)
-            health.TakeDamage(5);
+        if (stormManager.timeSinceLastDamage > 1 && stormCubeManager.isPlayerInsideTheStorm)
+        {
+            stormCubeManager.PlayHitSound();
+            healthBar.TakeDamage(5);
+            stormManager.timeSinceLastDamage = 0;
+        }
     }
+
     // Update is called once per frame
     void Update()
     {
         ManageShooting();
         ManageStorm();
     }
-}
 
-public enum PlayerState
-{
-    OnFoot,
-    InVehicle
+    void FixedUpdate()
+    {
+        if (isInCar)
+        {
+            playerController.transform.position =new Vector3(
+               vehicleManager.gameObject.transform.position.x,
+               3f,
+               vehicleManager.gameObject.transform.position.z);
+        }
+    }
 }

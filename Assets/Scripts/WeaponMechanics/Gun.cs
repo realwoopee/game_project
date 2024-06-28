@@ -156,7 +156,6 @@ public class Gun : MonoBehaviour
     private Vector3 GetDirection()
     {
         Vector3 direction = GameObject.FindGameObjectWithTag("Player").transform.forward;
-        Debug.Log(direction.ToString());
         if (_addBulletSpread)
         {
             if (Ads)

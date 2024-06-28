@@ -9,8 +9,6 @@ something useful for your game. Best regards, Mena.
 */
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +21,8 @@ public class PrometeoCarController : MonoBehaviour
     //CAR SETUP
 
     //[Header("CAR SETUP")]
+    
+    
     [Range(20, 190)] public int maxSpeed = 90; //The maximum speed that the car can reach in km/h.
 
     [Range(10, 120)]
