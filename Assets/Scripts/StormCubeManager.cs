@@ -1,10 +1,9 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class StormCubeManager : MonoBehaviour
 {
+    [SerializeField] private Timer _timer;
     private bool _isPlayerInsideTheStorm;
-    private bool _isVanInsideTheStorm;
     [SerializeField] private GameObject wallEye;
     [SerializeField] private GameObject wallEyeMesh;
     [SerializeField] private AudioSource _stormAmbient;
@@ -13,13 +12,33 @@ public class StormCubeManager : MonoBehaviour
     [SerializeField] private AudioSource _hitSound3;
     private int _stormHitCounter = 0;
     private Color32 _currentColor;
-    [SerializeField] public bool isPlayerInsideTheStorm { get; set; }
-    [SerializeField] public bool isVanInsideTheStorm { get; set; }
+    [SerializeField] public bool isPlayerInsideTheStorm { get => _isPlayerInsideTheStorm; }
+    private float _firstStageLength;
+    [SerializeField] private float _lowerBorderForFirstStage;
+    [SerializeField] private float _upperBorderForFirstStage;
+    [SerializeField] private int _firstStageDamage;
+    private float _secondStageLength;
+    [SerializeField] private float _lowerBorderForSecondStage;
+    [SerializeField] private float _upperBorderForSecondStage;
+    [SerializeField] private int _secondStageDamage;
+    private float _thirdStageLength;
+    [SerializeField] private float _lowerBorderForThirdStage;
+    [SerializeField] private float _upperBorderForThirdStage;
+    [SerializeField] private int _thirdStageDamage;
+    private float _fourthStageLength;
+    [SerializeField] private float _lowerBorderForFourthStage;
+    [SerializeField] private float _upperBorderForFourthStage;
+    [SerializeField] private int _fourthStageDamage;
+    [SerializeField] private int _endGameDamage;
 
 
     // Start is called before the first frame update
     void Start()
     {
+        _firstStageLength = Random.Range(_lowerBorderForFirstStage, _upperBorderForFirstStage);
+        _secondStageLength = Random.Range(_lowerBorderForSecondStage, _upperBorderForSecondStage);
+        _thirdStageLength = Random.Range(_lowerBorderForThirdStage, _upperBorderForThirdStage);
+        _fourthStageLength = Random.Range(_lowerBorderForFourthStage, _upperBorderForFourthStage);
         _stormAmbient = transform.Find("StormAmbient").gameObject.GetComponent<AudioSource>();
         _hitSound1 = transform.Find("StormHitSound1").gameObject.GetComponent<AudioSource>();
         _hitSound2 = transform.Find("StormHitSound2").gameObject.GetComponent<AudioSource>();
@@ -41,25 +60,15 @@ public class StormCubeManager : MonoBehaviour
             ApplyStormEffect();
         }
 
-        if (other.name == "Van"){
-            _isVanInsideTheStorm = true;
-            _isPlayerInsideTheStorm = false;
-            ApplyStormEffect();
-        }
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (other.name == "PlayerArmature"){
-            CancelStormEffect();
             _isPlayerInsideTheStorm = false;
+            CancelStormEffect();
         }
 
-        if (other.name == "Van"){
-            CancelStormEffect();
-            _isVanInsideTheStorm = false;
-            _isPlayerInsideTheStorm = false;
-        }
 
         // This function is called when another collider exits the trigger volume
         Debug.Log($"Object {other.name} exited the trigger.");
@@ -85,5 +94,18 @@ public class StormCubeManager : MonoBehaviour
             _hitSound3.Play();
         _stormHitCounter++;
     }
-
+    public int Damage()
+    {
+        Debug.Log("time" + _timer.InGameTime);
+        if (_timer.InGameTime < _firstStageLength)
+            return _firstStageDamage;
+        else if (_timer.InGameTime < _secondStageLength)
+            return _secondStageDamage;
+        else if (_timer.InGameTime < _thirdStageDamage)
+            return _thirdStageDamage;
+        else if (_timer.InGameTime < _fourthStageDamage)
+            return _fourthStageDamage;
+        else
+            return _endGameDamage;
+    }
 }

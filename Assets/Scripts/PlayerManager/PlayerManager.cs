@@ -34,7 +34,6 @@ public class PlayerManager : MonoBehaviour
             if (cursorController.Highlighted && cursorController.Highlighted == vehicleManager.transform.parent.gameObject)
             {
                 PutPlayerInVehicle(vehicleManager.gameObject);
-                stormCubeManager.isPlayerInsideTheStorm = false;
             }
         }
         else if (isInCar)
@@ -51,7 +50,6 @@ public class PlayerManager : MonoBehaviour
         virtualCamera.Follow = vehicle.gameObject.transform;
         vehicle.GetComponent<VehicleManager>().PlayerGotIn();
         playerController.transform.localScale = new Vector3(0,0,0);
-        stormCubeManager.isPlayerInsideTheStorm = false;
     }
 
     void PutPlayerOutOfVehicle(GameObject vehicle)
@@ -79,10 +77,11 @@ public class PlayerManager : MonoBehaviour
     }
 
     public void ManageStorm(){
+        Debug.Log("iPITS" + stormCubeManager.isPlayerInsideTheStorm);
         if (stormManager.timeSinceLastDamage > 1 && stormCubeManager.isPlayerInsideTheStorm)
         {
             stormCubeManager.PlayHitSound();
-            healthBar.TakeDamage(5);
+            healthBar.TakeDamage(stormCubeManager.Damage());
             stormManager.timeSinceLastDamage = 0;
         }
     }
