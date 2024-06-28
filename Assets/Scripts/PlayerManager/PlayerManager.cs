@@ -99,9 +99,9 @@ public class PlayerManager : MonoBehaviour
         if (isInCar)
         {
             playerController.transform.position =new Vector3(
-               vehicleManager.gameObject.transform.position.x,
+               vehicleManager.gameObject.transform.position.x - 3,
                3f,
-               vehicleManager.gameObject.transform.position.z);
+               vehicleManager.gameObject.transform.position.z - 3);
         }
     }
 }
