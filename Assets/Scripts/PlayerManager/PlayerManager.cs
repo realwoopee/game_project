@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Cinemachine;
 using StarterAssets;
 using UnityEngine;
@@ -12,19 +13,27 @@ public class PlayerManager : MonoBehaviour
     public InputManager inputManager;
     public InventoryManager inventoryManager;
     // [SerializeField] public Gun gun;
+    
+    public InventoryState playerInventoryState;
 
     [field: SerializeField]
     public PlayerState PlayerState { get; private set; } = PlayerState.OnFoot;
-    
-    [field: SerializeField]
-    public bool IsInventoryOpened { get => inventoryManager.IsInnerOpened; set => inventoryManager.IsInnerOpened = value; }
+
+    public bool inventoryOpen = false;
+
+    private void Awake()
+    {
+        playerInventoryState ??= ScriptableObject.CreateInstance<InventoryState>();
+    }
 
     // Start is called before the first frame update
     void Start()
     {
+        inventoryManager.SetPlayerInventoryState(playerInventoryState);
         inputManager.OnInteractPressed += OnInteract;
         //inputManager.OnShootPressed += Shoot;
         inputManager.OnReloadPressed += Reload;
+        InventoryHandlingInit();
     }
 
     void OnInteract()
@@ -32,9 +41,24 @@ public class PlayerManager : MonoBehaviour
         switch (PlayerState)
         {
             case PlayerState.OnFoot:
-                if (cursorController.Highlighted && cursorController.Highlighted == vehicleManager.transform.parent.gameObject)
+                if (cursorController.Highlighted)
                 {
-                    PutPlayerInVehicle(vehicleManager.gameObject);
+                    if (cursorController.Highlighted == vehicleManager.transform.parent.gameObject)
+                    {
+                        PutPlayerInVehicle(vehicleManager.gameObject);
+                    }
+
+                    if (cursorController.Highlighted.TryGetComponent<InventoryValue>(out var pack))
+                    {
+                        var ammoAmount = playerInventoryState.shotgunEquipped ? pack.value.shotgunAmmoAmount : pack.value.pistolAmmoAmount;
+                        playerInventoryState.AmmoAmount += ammoAmount;
+                        playerInventoryState.aptechasAmount += pack.value.aptechasAmount;
+                        playerInventoryState.componentAAmount += pack.value.componentAAmount;
+                        playerInventoryState.componentBAmount += pack.value.componentBAmount;
+                        playerInventoryState.componentCAmount += pack.value.componentCAmount;
+                        playerInventoryState.fuelAmount += pack.value.fuelAmount;
+                        pack.Consume();
+                    }
                 }
                 break;
             case PlayerState.InVehicle:
@@ -66,22 +90,51 @@ public class PlayerManager : MonoBehaviour
 
     void Shoot()
     {
-        if (playerController.Speed >= playerController.SprintSpeed || inventoryManager.IsInnerOpened)//or inventoryOpened
+        if (playerController.Speed >= playerController.SprintSpeed )//|| inventoryManager.IsInnerOpened)//or inventoryOpened
             return;
 
-        playerController.SelectedGun.Fire();
+        if(playerController.SelectedGun.CanFire)
+            playerController.SelectedGun.Fire();
     }
 
     void Reload()
     {
-        if (!playerController.SelectedGun.IsReloading && playerController.SelectedGun.ShellsLeft != playerController.SelectedGun.MagSize)
-            playerController.SelectedGun.Reload();
+        if (playerController.SelectedGun.IsReloading) return;
+        
+        var neededAmount = playerController.SelectedGun.MagSize - playerController.SelectedGun.ShellsLeft;
+        if (neededAmount <= 0) return;
+
+        var amountToReload = Mathf.Min(neededAmount, playerInventoryState.AmmoAmount);
+        
+        if(amountToReload <= 0) return;
+        
+        StartCoroutine(ReloadSequence(amountToReload));
+        return;
+
+        IEnumerator ReloadSequence(int amount)
+        {
+            playerInventoryState.AmmoAmount -= amount;
+            yield return playerController.SelectedGun.Reload(amount);
+        }
     }
     
     void Update()
     {
         if(inputManager.shootHeld)
             Shoot();
+    }
+
+    void InventoryHandlingInit()
+    {
+        inputManager.OnInventoryOpenClosePressed += ToggleInventory;
+    }
+
+    void ToggleInventory()
+    {
+        var newInventoryState = !inventoryOpen;
+        inventoryManager.SetPlayerInventoryVisible(newInventoryState);
+        cursorController.gameObject.SetActive(!newInventoryState);
+        inventoryOpen = newInventoryState;
     }
 }
 

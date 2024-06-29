@@ -6,9 +6,6 @@ using CodeMonkey.Utils;
 
 public class InventoryTetris : MonoBehaviour {
 
-    public static InventoryTetris Instance { get; private set; }
-
-
     public event EventHandler<PlacedObject> OnObjectPlaced;
 
     private Grid<GridObject> grid;
@@ -16,7 +13,6 @@ public class InventoryTetris : MonoBehaviour {
 
 
     private void Awake() {
-        Instance = this;
 
         int gridWidth = 10;
         int gridHeight = 10;

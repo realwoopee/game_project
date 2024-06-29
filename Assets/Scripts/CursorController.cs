@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
@@ -33,6 +34,11 @@ public class CursorController : MonoBehaviour
         Cursor.visible = false;
     }
 
+    private void OnDisable()
+    {
+        Highlighted = ProcessHoverable(null, Highlighted);
+    }
+
     private Vector3 _lastMousePosition;
 
     // Update is called once per frame
@@ -45,9 +51,7 @@ public class CursorController : MonoBehaviour
         
         var hit = GetCursorHit(_lastMousePosition);
         if (hit is null)
-        {
-            Debug.LogError("Cursor didn't hit");
-        }
+            return;
         
         Highlighted = ProcessHoverable(hit.Value.transform.gameObject, Highlighted);
 
@@ -67,11 +71,13 @@ public class CursorController : MonoBehaviour
                 lastHoverable.OnHoverExit();
             }
         }
-            
+
+        if (!currentHitObject) return null;
+        
         var newHoverable = currentHitObject.GetComponent<Hoverable>();
         if (!newHoverable) return null;
         newHoverable.OnHoverEnter();
-        
+
         return currentHitObject;
 
     }

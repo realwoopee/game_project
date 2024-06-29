@@ -66,6 +66,7 @@ public class Gun : MonoBehaviour
     public int ShellsLeft { get => _shellsLeft; }
     public int MagSize{get=>_magSize;}
     public bool IsReloading { get => _isReloading; }
+    
     //TODO: ADS sounds
     public bool Ads
     {
@@ -78,9 +79,11 @@ public class Gun : MonoBehaviour
         }
     }
 
+    public bool CanFire => Time.time >= _lastShotTime + _shootDelay && !_isReloading;
+    
     public void Fire()
     {
-        if (!(_lastShotTime + _shootDelay < Time.time) || _isReloading)
+        if (!CanFire)
             return;
 
         _lastShotTime = Time.time;
@@ -124,21 +127,21 @@ public class Gun : MonoBehaviour
         }
     }
 
-    public async Task Reload()
+    public IEnumerator Reload(int amount)
     {
         // if (NoAmmoLeftInInventory)
         // {
         //     return;
         // }
         if (_shellsLeft == _magSize)
-            return;
+            yield break;
 
         _isReloading = true;
         AudioSource.PlayClipAtPoint(_reloadSound, transform.position, _reloadSoundVolume);
-        await Task.Delay((int)(_reloadSound.length * 1000));
+        yield return new WaitForSeconds(_reloadSound.length);
         _isReloading = false;
 
-        _shellsLeft = _magSize;
+        _shellsLeft += amount;
     }
     public void CheckForColliders(Ray ray)
     {
