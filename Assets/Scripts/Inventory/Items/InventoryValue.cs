@@ -13,9 +13,9 @@ public class InventoryValue : MonoBehaviour
         if (value) return;
         
         value = ScriptableObject.CreateInstance<InventoryState>();
-            
-        value.pistolAmmoAmount = ammoCount;
-        value.shotgunAmmoAmount = ammoCount / 3;
+        
+        value.pistolAmmoAmount = Random.Range(0, 30);
+        value.shotgunAmmoAmount = Random.Range(0, 15);
         value.aptechasAmount = Random.Range(0, 3);
         value.componentAAmount = Random.Range(0, 10);
         value.componentBAmount = Random.Range(0, 5);

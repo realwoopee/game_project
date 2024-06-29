@@ -11,7 +11,7 @@ public class PlayerManager : MonoBehaviour
     public VehicleManager vehicleManager;
     public CinemachineVirtualCamera virtualCamera;
     public InputManager inputManager;
-    public InventoryManager inventoryManager;
+    public PlayerInventoryController playerInventoryController;
     public HealthBarBehaviour healthBar;
     // [SerializeField] public Gun gun;
     
@@ -30,12 +30,12 @@ public class PlayerManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        inventoryManager.SetPlayerInventoryState(playerInventoryState);
+        playerInventoryController.selectedGun = playerController.SelectedGun;
+        playerInventoryController.playerInventoryState = playerInventoryState;
         inputManager.OnInteractPressed += OnInteract;
         //inputManager.OnShootPressed += Shoot;
         inputManager.OnReloadPressed += Reload;
         inputManager.OnHealPressed += OnHeal;
-        InventoryHandlingInit();
     }
 
     void OnInteract()
@@ -53,6 +53,12 @@ public class PlayerManager : MonoBehaviour
                     if (cursorController.Highlighted.TryGetComponent<InventoryValue>(out var pack))
                     {
                         var ammoAmount = playerInventoryState.shotgunEquipped ? pack.value.shotgunAmmoAmount : pack.value.pistolAmmoAmount;
+                        if (!playerInventoryState.shotgunEquipped && pack.value.shotgunEquipped)
+                        {                        
+                            playerInventoryState.shotgunEquipped = true;
+                            playerController.SelectedGun = playerController.gameObject.transform.Find("Shotgun")
+                                .GetComponent<Gun>();
+                        }
                         playerInventoryState.AmmoAmount += ammoAmount;
                         playerInventoryState.aptechasAmount += pack.value.aptechasAmount;
                         playerInventoryState.componentAAmount += pack.value.componentAAmount;
@@ -133,19 +139,9 @@ public class PlayerManager : MonoBehaviour
     {
         if(inputManager.shootHeld)
             Shoot();
-    }
-
-    void InventoryHandlingInit()
-    {
-        inputManager.OnInventoryOpenClosePressed += ToggleInventory;
-    }
-
-    void ToggleInventory()
-    {
-        var newInventoryState = !inventoryOpen;
-        inventoryManager.SetPlayerInventoryVisible(newInventoryState);
-        cursorController.gameObject.SetActive(!newInventoryState);
-        inventoryOpen = newInventoryState;
+        
+        playerInventoryController.selectedGun = playerController.SelectedGun;
+        
     }
 }
 
