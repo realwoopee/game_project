@@ -427,6 +427,9 @@ public class PrometeoCarController : MonoBehaviour
                 }
             }
         }
+        else{
+            carEngineSound.Stop();
+        }
 
 
         // We call the method AnimateWheelMeshes() in order to match the wheel collider movements with the 3D meshes of the wheels.

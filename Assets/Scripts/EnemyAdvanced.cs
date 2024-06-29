@@ -1,5 +1,6 @@
 using UnityEngine;
 using StarterAssets;
+using recaremo;
 
 /* Note: animations are called via the controller for both the character and capsule using animator null checks
  */
@@ -59,9 +60,11 @@ namespace StarterAssets
 
 
         [SerializeField] private int _damage;
+        [SerializeField] private Timer _timer;
         [SerializeField] private int _health;
-
         [SerializeField] private EnemyData _data;
+        [SerializeField] private PlayerController _player;
+        [SerializeField] private float _attackTime;
         private Transform _targetPosition;
         private bool _targetInRange;
 
@@ -70,6 +73,7 @@ namespace StarterAssets
         private int _animIDGrounded;
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
+        private bool _attacking = false;
 
         private Animator _animator;
         private CharacterController _controller;
@@ -86,8 +90,9 @@ namespace StarterAssets
         }
         private void Start()
         {
-
+            _player = GameObject.Find("PlayerArmature").GetComponent<PlayerController>();
             _hasAnimator = TryGetComponent(out _animator);
+            _animator.updateMode = AnimatorUpdateMode.UnscaledTime;
             _controller = GetComponent<CharacterController>();
 
             AssignAnimationIDs();
@@ -109,9 +114,14 @@ namespace StarterAssets
             GroundedCheck();
             Move(Vector3.MoveTowards(transform.position, _targetPosition.position, 100f));
             AliveCheck();
+            TryToAttack();
         }
 
-
+        private void TryToAttack(){
+            if (Vector3.Distance(transform.position, _player.gameObject.transform.position) < 2){
+                _animator.SetBool("Attack", true);
+            }
+        }
 
         private void AssignAnimationIDs()
         {
@@ -172,6 +182,7 @@ namespace StarterAssets
             if (_hasAnimator)
             {
                 _animator.SetFloat(_animIDSpeed, _animationBlend);
+                _animator.SetFloat("Speed", 5);
             }
         }
 

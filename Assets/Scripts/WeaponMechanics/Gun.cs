@@ -141,13 +141,14 @@ public class Gun : MonoBehaviour
     }
     public void CheckForColliders(Ray ray)
     {
-        // if (Physics.Raycast(ray, out RaycastHit hit))
         Vector3 direction = GetDirection();
         Vector3 spread = GetPalletSpread(direction);
         if (Physics.Raycast(_bulletSpawnPoint.position, spread, out RaycastHit hit, float.MaxValue, _damagableLayer))
         {
-            if (hit.collider.TryGetComponent(out EnemyAdvanced enemy))
+            Debug.Log("2");
+            if (hit.collider.gameObject.TryGetComponent(out EnemySimple enemy))
             {
+                Debug.Log("3");
                 enemy.GetDamage(_damage);
             }
         }

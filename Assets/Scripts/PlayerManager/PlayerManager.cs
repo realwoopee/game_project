@@ -10,7 +10,6 @@ public class PlayerManager : MonoBehaviour
     public VehicleManager vehicleManager;
     public CinemachineVirtualCamera virtualCamera;
     public InputManager inputManager;
-    public InventoryManager inventoryManager;
     // [SerializeField] public Gun gun;
     public StormManager stormManager;
     public StormCubeManager stormCubeManager;
@@ -18,7 +17,6 @@ public class PlayerManager : MonoBehaviour
 
     [field: SerializeField]
     [HideInInspector] public bool isInCar { get; private set; } = false;
-    public bool isInventoryOpened { get => inventoryManager.IsInnerOpened; set => inventoryManager.IsInnerOpened = value; }
 
     // Start is called before the first frame update
     void Start()
@@ -67,7 +65,7 @@ public class PlayerManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (playerController.Speed >= playerController.SprintSpeed || inventoryManager.IsInnerOpened || isInCar)
+            if (playerController.Speed >= playerController.SprintSpeed || isInCar)
                 return;
 
             playerController.SelectedGun.Fire();
