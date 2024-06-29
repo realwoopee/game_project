@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Cinemachine;
 using StarterAssets;
 using UnityEngine;
@@ -10,95 +11,142 @@ public class PlayerManager : MonoBehaviour
     public VehicleManager vehicleManager;
     public CinemachineVirtualCamera virtualCamera;
     public InputManager inputManager;
+    public PlayerInventoryController playerInventoryController;
+    public HealthBarBehaviour healthBar;
     // [SerializeField] public Gun gun;
-    public StormManager stormManager;
-    public StormCubeManager stormCubeManager;
-    public HealthBarManager healthBar;
+    
+    public InventoryState playerInventoryState;
 
     [field: SerializeField]
-    [HideInInspector] public bool isInCar { get; private set; } = false;
+    public PlayerState PlayerState { get; private set; } = PlayerState.OnFoot;
+
+    public bool inventoryOpen = false;
+
+    private void Awake()
+    {
+        playerInventoryState ??= ScriptableObject.CreateInstance<InventoryState>();
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        stormCubeManager = stormManager.StormCube.GetComponent<StormCubeManager>();
+        playerInventoryController.selectedGun = playerController.SelectedGun;
+        playerInventoryController.playerInventoryState = playerInventoryState;
         inputManager.OnInteractPressed += OnInteract;
+        //inputManager.OnShootPressed += Shoot;
+        inputManager.OnReloadPressed += Reload;
+        inputManager.OnHealPressed += OnHeal;
     }
 
     void OnInteract()
     {
-        if (!isInCar)
+        switch (PlayerState)
         {
-            if (cursorController.Highlighted && cursorController.Highlighted == vehicleManager.transform.parent.gameObject)
-            {
-                PutPlayerInVehicle(vehicleManager.gameObject);
-            }
-        }
-        else if (isInCar)
-        {
-            PutPlayerOutOfVehicle(vehicleManager.gameObject);
-        }
+            case PlayerState.OnFoot:
+                if (cursorController.Highlighted)
+                {
+                    if (cursorController.Highlighted == vehicleManager.transform.parent.gameObject)
+                    {
+                        PutPlayerInVehicle(vehicleManager.gameObject);
+                    }
 
+                    if (cursorController.Highlighted.TryGetComponent<InventoryValue>(out var pack))
+                    {
+                        var ammoAmount = playerInventoryState.shotgunEquipped ? pack.value.shotgunAmmoAmount : pack.value.pistolAmmoAmount;
+                        if (!playerInventoryState.shotgunEquipped && pack.value.shotgunEquipped)
+                        {                        
+                            playerInventoryState.shotgunEquipped = true;
+                            playerController.SelectedGun = playerController.gameObject.transform.Find("Shotgun")
+                                .GetComponent<Gun>();
+                        }
+                        playerInventoryState.AmmoAmount += ammoAmount;
+                        playerInventoryState.aptechasAmount += pack.value.aptechasAmount;
+                        playerInventoryState.componentAAmount += pack.value.componentAAmount;
+                        playerInventoryState.componentBAmount += pack.value.componentBAmount;
+                        playerInventoryState.componentCAmount += pack.value.componentCAmount;
+                        playerInventoryState.fuelAmount += pack.value.fuelAmount;
+                        pack.Consume();
+                    }
+                }
+                break;
+            case PlayerState.InVehicle:
+                PutPlayerOutOfVehicle(vehicleManager.gameObject);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    void OnHeal()
+    {
+        if(playerInventoryState.aptechasAmount <= 0) return;
+
+        playerInventoryState.aptechasAmount--;
+        healthBar.Heal(15);
     }
 
     void PutPlayerInVehicle(GameObject vehicle)
     {
-        isInCar = true;
-        // playerController.gameObject.SetActive(false);
+        playerController.gameObject.SetActive(false);
         virtualCamera.Follow = vehicle.gameObject.transform;
-        vehicle.GetComponent<VehicleManager>().PlayerGotIn();
-        playerController.transform.localScale = new Vector3(0,0,0);
+        vehicle.GetComponent<VehicleManager>().PlayerGotIn(playerInventoryState.fuelAmount);
+        playerInventoryState.fuelAmount = 0;
+        PlayerState = PlayerState.InVehicle;
     }
 
     void PutPlayerOutOfVehicle(GameObject vehicle)
     {
-        isInCar = false;
-        // playerController.gameObject.SetActive(true);
-        playerController.transform.localScale = new Vector3(1,1,1);
-        virtualCamera.Follow = playerController.transform.Find("PlayerCameraRoot").transform;
-        vehicle.GetComponent<VehicleManager>().PlayerGotOut();
         playerController.transform.position =
             vehicle.transform.parent.Find("PlayerLeavePosition").position;
+        playerController.gameObject.SetActive(true);
+        virtualCamera.Follow = playerController.transform.Find("PlayerCameraRoot").transform;
+        vehicle.GetComponent<VehicleManager>().PlayerGotOut();
+        PlayerState = PlayerState.OnFoot;
+
     }
 
-    public void ManageShooting()
+    void Shoot()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (playerController.Speed >= playerController.SprintSpeed || isInCar)
-                return;
+        if (playerController.Speed >= playerController.SprintSpeed )//|| inventoryManager.IsInnerOpened)//or inventoryOpened
+            return;
 
+        if(playerController.SelectedGun.CanFire)
             playerController.SelectedGun.Fire();
-        }
-        if (Input.GetKeyDown(KeyCode.R) && !playerController.SelectedGun.IsReloading && !(playerController.SelectedGun.ShellsLeft == playerController.SelectedGun.MagSize))
-            playerController.SelectedGun.Reload();
     }
 
-    public void ManageStorm(){
-        Debug.Log("iPITS" + stormCubeManager.isPlayerInsideTheStorm);
-        if (stormManager.timeSinceLastDamage > 1 && stormCubeManager.isPlayerInsideTheStorm)
+    void Reload()
+    {
+        if (playerController.SelectedGun.IsReloading) return;
+        
+        var neededAmount = playerController.SelectedGun.MagSize - playerController.SelectedGun.ShellsLeft;
+        if (neededAmount <= 0) return;
+
+        var amountToReload = Mathf.Min(neededAmount, playerInventoryState.AmmoAmount);
+        
+        if(amountToReload <= 0) return;
+        
+        StartCoroutine(ReloadSequence(amountToReload));
+        return;
+
+        IEnumerator ReloadSequence(int amount)
         {
-            stormCubeManager.PlayHitSound();
-            healthBar.TakeDamage(stormCubeManager.Damage());
-            stormManager.timeSinceLastDamage = 0;
+            playerInventoryState.AmmoAmount -= amount;
+            yield return playerController.SelectedGun.Reload(amount);
         }
     }
-
-    // Update is called once per frame
+    
     void Update()
     {
-        ManageShooting();
-        ManageStorm();
+        if(inputManager.shootHeld)
+            Shoot();
+        
+        playerInventoryController.selectedGun = playerController.SelectedGun;
+        
     }
+}
 
-    void FixedUpdate()
-    {
-        if (isInCar)
-        {
-            playerController.transform.position =new Vector3(
-               vehicleManager.gameObject.transform.position.x - 3,
-               3f,
-               vehicleManager.gameObject.transform.position.z - 3);
-        }
-    }
+public enum PlayerState
+{
+    OnFoot,
+    InVehicle
 }

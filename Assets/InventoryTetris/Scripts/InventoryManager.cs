@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InventoryManager : MonoBehaviour {
+public class InventoryManagerOld : MonoBehaviour {
 
     [SerializeField] private Transform _outerInventoryTetrisBackground;
     [SerializeField] private InventoryTetris _inventoryTetris;
@@ -20,15 +20,15 @@ public class InventoryManager : MonoBehaviour {
     }
 
     private void Update() {
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            if (IsInnerOpened)
-                CloseInner();
-            else
-                OpenInner();
-                
-            addItemTetrisSaveListIndex = (addItemTetrisSaveListIndex + 1) % addItemTetrisSaveList.Count;
-        }
+        // if (Input.GetKeyDown(KeyCode.Tab))
+        // {
+        //     if (IsInnerOpened)
+        //         CloseInner();
+        //     else
+        //         OpenInner();
+        //         
+        //     addItemTetrisSaveListIndex = (addItemTetrisSaveListIndex + 1) % addItemTetrisSaveList.Count;
+        // }
 
         if (Input.GetKeyDown(KeyCode.O)) {
             _outerInventoryTetrisBackground.gameObject.SetActive(!_outerInventoryTetrisBackground.gameObject.activeSelf);
@@ -44,17 +44,30 @@ public class InventoryManager : MonoBehaviour {
         }
     }
 
-    public bool IsInnerOpened { get => _isInnerOpened; set => _isInnerOpened = value; }
+    public bool IsInnerOpened
+    {
+        get => _isInnerOpened;
+        set
+        {
+            if(!_isInnerOpened && value)
+                OpenInner();
+            else if (_isInnerOpened && !value)
+                CloseInner();
+            
+            addItemTetrisSaveListIndex = (addItemTetrisSaveListIndex + 1) % addItemTetrisSaveList.Count;
+        }
+    }
+
     public bool IsOuterOpened { get => _isOuterOpened; set => _isOuterOpened = value; }
     public void CloseInner()
     {
-        IsInnerOpened = false;
+        _isInnerOpened = false;
         _inventoryTetrisBackground.gameObject.SetActive(false);
         _inventoryTetris.Save();
     }
     public void OpenInner()
     {
-        IsInnerOpened = true;
+        _isInnerOpened = true;
         _inventoryTetrisBackground.gameObject.SetActive(true);
     }
     public void CloseOuter()

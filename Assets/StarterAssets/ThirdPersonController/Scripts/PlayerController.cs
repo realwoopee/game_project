@@ -249,6 +249,9 @@ namespace StarterAssets
 
                 // rotate to face input direction relative to camera position
                 transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                
+                    targetDirection = Quaternion.Euler(0f, Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                                           _mainCamera.transform.eulerAngles.y, 0f) * Vector3.forward;
             }
             else
             {
@@ -261,14 +264,12 @@ namespace StarterAssets
 
                     // rotate to face input direction relative to camera position
                     transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                    
+                    targetDirection = Quaternion.Euler(0f, Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                                           _mainCamera.transform.eulerAngles.y, 0f) * Vector3.forward;
                 }
             }
-
             
-            targetDirection = Quaternion.Euler(0f, Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                                    _mainCamera.transform.eulerAngles.y, 0f) * Vector3.forward;
-
-
             // move the player
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
                              new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
