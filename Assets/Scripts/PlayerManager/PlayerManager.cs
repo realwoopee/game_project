@@ -12,6 +12,7 @@ public class PlayerManager : MonoBehaviour
     public CinemachineVirtualCamera virtualCamera;
     public InputManager inputManager;
     public InventoryManager inventoryManager;
+    public HealthBarBehaviour healthBar;
     // [SerializeField] public Gun gun;
     
     public InventoryState playerInventoryState;
@@ -33,6 +34,7 @@ public class PlayerManager : MonoBehaviour
         inputManager.OnInteractPressed += OnInteract;
         //inputManager.OnShootPressed += Shoot;
         inputManager.OnReloadPressed += Reload;
+        inputManager.OnHealPressed += OnHeal;
         InventoryHandlingInit();
     }
 
@@ -69,11 +71,20 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    void OnHeal()
+    {
+        if(playerInventoryState.aptechasAmount <= 0) return;
+
+        playerInventoryState.aptechasAmount--;
+        healthBar.Heal(15);
+    }
+
     void PutPlayerInVehicle(GameObject vehicle)
     {
         playerController.gameObject.SetActive(false);
         virtualCamera.Follow = vehicle.gameObject.transform;
-        vehicle.GetComponent<VehicleManager>().PlayerGotIn();
+        vehicle.GetComponent<VehicleManager>().PlayerGotIn(playerInventoryState.fuelAmount);
+        playerInventoryState.fuelAmount = 0;
         PlayerState = PlayerState.InVehicle;
     }
 

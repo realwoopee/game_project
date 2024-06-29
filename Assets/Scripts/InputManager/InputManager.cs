@@ -8,7 +8,7 @@ public partial class InputManager : MonoBehaviour
     {
         var playerInput = GetComponent<PlayerInput>();
         playerInput.actions.FindActionMap("Player").Enable(); 
-        playerInput.actions.FindActionMap("Vehicle").Disable();
+        playerInput.actions.FindActionMap("Vehicle").Enable();
         playerInput.actions.FindActionMap("Inventory").Enable();
     }
 

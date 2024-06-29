@@ -106,4 +106,28 @@ public partial class InputManager
 
         _lastReloadState = newValue;
     }
+    
+    public event Action OnHealPressed;
+    public event Action OnHealReleased;
+    public bool healHeld;
+    private bool _lastHealState = false;
+
+    public void HealInput(bool newValue)
+    {
+        switch ((_lastHealState, newValue))
+        {
+            case (false, true):
+                healHeld = true;
+                OnHealPressed?.Invoke();
+                break;
+            case (true, false):
+                healHeld = false;
+                OnHealReleased?.Invoke();
+                break;
+            default:
+                break;
+        }
+
+        _lastHealState = newValue;
+    }
 }

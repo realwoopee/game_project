@@ -10,15 +10,17 @@ public class InventoryValue : MonoBehaviour
     {
         var ammoCount = Random.Range(0, 20);
 
-        value = ScriptableObject.CreateInstance<InventoryState>();
+        if (value) return;
         
+        value = ScriptableObject.CreateInstance<InventoryState>();
+            
         value.pistolAmmoAmount = ammoCount;
         value.shotgunAmmoAmount = ammoCount / 3;
         value.aptechasAmount = Random.Range(0, 3);
         value.componentAAmount = Random.Range(0, 10);
         value.componentBAmount = Random.Range(0, 5);
         value.componentCAmount = Random.Range(0, 2);
-        value.fuelAmount = Random.Range(0, 20);
+        value.fuelAmount = Random.Range(0, 100);
     }
 
     public void Consume()

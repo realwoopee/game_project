@@ -10,7 +10,9 @@ public partial class InputManager
     public void OnInteract(InputValue value) => InteractInput(value.isPressed);
     public void OnSprint(InputValue value) => SprintInput(value.isPressed);
     public void OnOpenClose(InputValue value) => InventoryOpenCloseInput(value.isPressed);
-    public void OnAds(InputValue value) => AdsInput(value.isPressed);
+    public void OnADS(InputValue value) => AdsInput(value.isPressed);
     public void OnShoot(InputValue value) => ShootInput(value.isPressed);
     public void OnReload(InputValue value) => ReloadInput(value.isPressed);
+    public void OnHandbrake(InputValue value) => HandbrakeInput(value.isPressed);
+    public void OnHeal(InputValue value) => HealInput(value.isPressed);
 }
