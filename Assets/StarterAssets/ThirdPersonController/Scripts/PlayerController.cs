@@ -87,6 +87,8 @@ namespace StarterAssets
         private CharacterController _controller;
         private GameObject _mainCamera;
 
+        public CharacterController Controller => _controller;
+
         private const float _threshold = 0.01f;
 
         private bool _hasAnimator;

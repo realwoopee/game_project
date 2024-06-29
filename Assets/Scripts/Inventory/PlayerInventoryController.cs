@@ -34,6 +34,6 @@ public class PlayerInventoryController : MonoBehaviour
         componentBAmount.text = playerInventoryState.componentBAmount.ToString();
         componentCAmount.text = playerInventoryState.componentCAmount.ToString();
         aptechkaAmount.text = playerInventoryState.aptechasAmount.ToString();
-        fuelAmount.text = playerInventoryState.fuelAmount.ToString();
+        fuelAmount.text = playerInventoryState.fuelAmount.ToString() + "L";
     }
 }

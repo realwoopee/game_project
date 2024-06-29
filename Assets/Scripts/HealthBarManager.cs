@@ -14,19 +14,6 @@ public class HealthBarManager : MonoBehaviour
         {
             Application.LoadLevel(Application.loadedLevel);
         }
-
-       //Press Enter to damage the character
-       if (Input.GetKeyDown(KeyCode.Return)) 
-       {
-            TakeDamage(10);
-       }
-
-        //Press Backspace to heal the character
-        if (Input.GetKeyDown(KeyCode.Backspace))
-        {
-            Heal(5);
-        }
-
     }
 
     public void TakeDamage(float damage)

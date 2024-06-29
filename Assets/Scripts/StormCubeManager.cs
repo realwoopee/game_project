@@ -1,9 +1,12 @@
+using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class StormCubeManager : MonoBehaviour
 {
     [SerializeField] private Timer _timer;
     private bool _isPlayerInsideTheStorm;
+    private bool _isCarInsideTheStorm;
     [SerializeField] private GameObject wallEye;
     [SerializeField] private GameObject wallEyeMesh;
     [SerializeField] private AudioSource _stormAmbient;
@@ -13,6 +16,7 @@ public class StormCubeManager : MonoBehaviour
     private int _stormHitCounter = 0;
     private Color32 _currentColor;
     [SerializeField] public bool isPlayerInsideTheStorm { get => _isPlayerInsideTheStorm; }
+    [SerializeField] public bool isCarInsideTheStorm { get => _isCarInsideTheStorm; }
     private float _firstStageLength;
     [SerializeField] private float _lowerBorderForFirstStage;
     [SerializeField] private float _upperBorderForFirstStage;
@@ -52,9 +56,6 @@ public class StormCubeManager : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        // This function is called when another collider enters the trigger volume
-        Debug.Log($"Object {other.name} entered the trigger.");
-
         if (other.name == "PlayerArmature"){
             _isPlayerInsideTheStorm = true;
             ApplyStormEffect();
@@ -68,10 +69,6 @@ public class StormCubeManager : MonoBehaviour
             _isPlayerInsideTheStorm = false;
             CancelStormEffect();
         }
-
-
-        // This function is called when another collider exits the trigger volume
-        Debug.Log($"Object {other.name} exited the trigger.");
     }
 
     public void ApplyStormEffect()
@@ -96,7 +93,6 @@ public class StormCubeManager : MonoBehaviour
     }
     public int Damage()
     {
-        Debug.Log("time" + _timer.InGameTime);
         if (_timer.InGameTime < _firstStageLength)
             return _firstStageDamage;
         else if (_timer.InGameTime < _secondStageLength)

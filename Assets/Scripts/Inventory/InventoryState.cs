@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+[CreateAssetMenu(menuName = "ScriptableObjects/Inventory Value")]
     public class InventoryState : ScriptableObject
     {
         public bool shotgunEquipped;

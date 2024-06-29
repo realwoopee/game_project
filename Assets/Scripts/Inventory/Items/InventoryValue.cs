@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
+
 
 public class InventoryValue : MonoBehaviour
 {
     public InventoryState value;
 
+    public AudioClip breakSound;
+    
     private void Start()
     {
         var ammoCount = Random.Range(0, 20);
@@ -25,6 +29,13 @@ public class InventoryValue : MonoBehaviour
 
     public void Consume()
     {
+        StartCoroutine(Sequence());
+    }
+
+    IEnumerator Sequence()
+    {
+        AudioSource.PlayClipAtPoint(breakSound, transform.position);
+        yield return new WaitForSeconds(breakSound.length);
         Destroy(gameObject);
     }
 }

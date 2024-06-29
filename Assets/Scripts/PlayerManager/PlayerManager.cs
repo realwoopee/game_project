@@ -12,8 +12,10 @@ public class PlayerManager : MonoBehaviour
     public CinemachineVirtualCamera virtualCamera;
     public InputManager inputManager;
     public PlayerInventoryController playerInventoryController;
-    public HealthBarBehaviour healthBar;
+    public HealthBarManager healthBar;
     // [SerializeField] public Gun gun;
+    public StormManager stormManager;
+    public StormCubeManager stormCubeManager;
     
     public InventoryState playerInventoryState;
 
@@ -87,26 +89,30 @@ public class PlayerManager : MonoBehaviour
 
     void PutPlayerInVehicle(GameObject vehicle)
     {
-        playerController.gameObject.SetActive(false);
+        PlayerState = PlayerState.InVehicle;
+        //playerController.gameObject.SetActive(false);
+        cursorController.highlightEnabled = false;
+        playerController.transform.localScale = Vector3.zero;
         virtualCamera.Follow = vehicle.gameObject.transform;
         vehicle.GetComponent<VehicleManager>().PlayerGotIn(playerInventoryState.fuelAmount);
         playerInventoryState.fuelAmount = 0;
-        PlayerState = PlayerState.InVehicle;
     }
 
     void PutPlayerOutOfVehicle(GameObject vehicle)
     {
-        playerController.transform.position =
-            vehicle.transform.parent.Find("PlayerLeavePosition").position;
-        playerController.gameObject.SetActive(true);
+        playerController.transform.position = vehicleManager.transform.parent.Find("PlayerLeavePosition").position;
+        playerController.transform.localScale = Vector3.one;
+        PlayerState = PlayerState.OnFoot;
+        cursorController.highlightEnabled = true;
+        //playerController.gameObject.SetActive(true);
         virtualCamera.Follow = playerController.transform.Find("PlayerCameraRoot").transform;
         vehicle.GetComponent<VehicleManager>().PlayerGotOut();
-        PlayerState = PlayerState.OnFoot;
-
     }
 
     void Shoot()
     {
+        if(PlayerState == PlayerState.InVehicle) return;
+        
         if (playerController.Speed >= playerController.SprintSpeed )//|| inventoryManager.IsInnerOpened)//or inventoryOpened
             return;
 
@@ -135,6 +141,14 @@ public class PlayerManager : MonoBehaviour
         }
     }
     
+    void ManageStorm()
+    {
+        if (!(stormManager.timeSinceLastDamage > 1) || !stormCubeManager.isPlayerInsideTheStorm) return;
+        stormCubeManager.PlayHitSound();
+        healthBar.TakeDamage(stormCubeManager.Damage());
+        stormManager.timeSinceLastDamage = 0;
+    }
+    
     void Update()
     {
         if(inputManager.shootHeld)
@@ -142,6 +156,15 @@ public class PlayerManager : MonoBehaviour
         
         playerInventoryController.selectedGun = playerController.SelectedGun;
         
+        ManageStorm();
+    }
+
+    private void FixedUpdate()
+    {
+        if (PlayerState == PlayerState.InVehicle)
+        {
+            playerController.transform.position = vehicleManager.transform.parent.Find("PlayerLeavePosition").position;
+        }
     }
 }
 

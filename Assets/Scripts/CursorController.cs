@@ -21,6 +21,8 @@ public class CursorController : MonoBehaviour
     [field: SerializeField]
     [CanBeNull] public GameObject Highlighted { get; private set; }
 
+    public bool highlightEnabled = true;
+
     [Range(0, 50)]
     public float maxHighlightRange;
     public Vector3 LastMousePosition { get => _cursor.transform.position; }
@@ -52,8 +54,11 @@ public class CursorController : MonoBehaviour
         var hit = GetCursorHit(_lastMousePosition);
         if (hit is null)
             return;
-        
-        Highlighted = ProcessHoverable(hit.Value.transform.gameObject, Highlighted);
+
+        if (highlightEnabled)
+            Highlighted = ProcessHoverable(hit.Value.transform.gameObject, Highlighted);
+        else
+            Highlighted = ProcessHoverable(null, Highlighted);
 
         _cursor.transform.position = hit.Value.point;
     }

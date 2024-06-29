@@ -18,6 +18,8 @@ public class EnemySimple : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        _playerArmature = GameObject.Find("PlayerArmature");
+        _playerManager = GameObject.FindObjectOfType<PlayerManager>();
         _isDead = false;
         _controller = GetComponent<CharacterController>();
         _isStaggered = false;

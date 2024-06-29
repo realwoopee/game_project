@@ -318,7 +318,10 @@ public class PrometeoCarController : MonoBehaviour
                 ResetSteeringAngle();
             }
         }
-        else{
+        else {
+            ThrottleOff();
+            InvokeRepeating("DecelerateCar", 0f, 0.1f);
+            ResetSteeringAngle();
             carEngineSound.Stop();
         }
 
